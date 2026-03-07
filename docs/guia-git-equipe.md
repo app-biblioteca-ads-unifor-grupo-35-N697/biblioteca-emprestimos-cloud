@@ -24,6 +24,41 @@ cd biblioteca-emprestimos-cloud
 
 ---
 
+## Antes de codar: cria a issue no Kanban
+
+> ⚠️ **Regra importante:** a issue precisa existir ANTES de você commitar. Se você commitar sem a issue existir, o `closes #N` não vai funcionar e a issue não vai fechar automaticamente quando mergear.
+
+### Como criar uma issue
+
+1. Entra no repositório no GitHub
+2. Clica em **"Issues"** no menu superior
+3. Clica em **"New issue"**
+4. Preenche:
+   - **Título:** nome curto e descritivo da tarefa
+   - **Descrição:** o que precisa ser feito
+   - No lado direito, em **"Labels"**, adiciona a label da área (`backend`, `frontend`, `documentation`, etc.)
+   - Em **"Projects"**, seleciona **"Kanban – Biblioteca Empréstimos"**
+5. Clica em **"Submit new issue"**
+6. A issue vai aparecer na coluna **"To do"** do Kanban
+
+### Antes de começar a codar: muda o status no Kanban
+
+1. Entra no repositório → clica em **"Projects"** → abre o **"Kanban – Biblioteca Empréstimos"**
+2. Encontra a issue que você vai trabalhar
+3. Clica nela → no lado direito, em **"Status"**, muda de **"To do"** para **"In Progress"**
+
+> Isso avisa o grupo que você começou a trabalhar nessa tarefa.
+
+### Após o merge: a issue fecha automático
+
+Quando o PR for mergeado na main com `closes #N` no commit, o GitHub:
+- Fecha a issue automaticamente
+- Move ela para **"Done"** no Kanban
+
+Isso só funciona se a issue existia **antes** do commit ser feito. Se você criou a issue depois, vai precisar linkar manualmente pelo campo **"Development"** dentro da issue.
+
+---
+
 ## Fluxo que todo mundo tem que seguir
 
 ### 1. Antes de começar qualquer coisa, atualiza a main
