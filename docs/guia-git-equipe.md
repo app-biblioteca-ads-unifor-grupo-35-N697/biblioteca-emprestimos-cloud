@@ -192,6 +192,47 @@ git commit -m "fix(loans): corrige cálculo de atraso na devolução"
 
 ---
 
+## Como criar issues e usar o Kanban
+
+O Kanban fica em **Projects** no repositório do GitHub. Toda tarefa nova vira uma issue antes de virar código.
+
+### Criando uma issue
+
+1. Vai em **Issues** no repositório
+2. Clica em **"New issue"**
+3. Coloca um título claro (ex: `Implementar autenticação com JWT`)
+4. Na descrição, explica o que precisa ser feito
+5. No lado direito:
+   - **Assignees** → coloca quem vai fazer
+   - **Labels** → seleciona a label certa (`feature`, `documentation`, `bug`, etc.)
+   - **Projects** → adiciona ao Kanban do projeto
+6. Clica em **"Submit new issue"**
+
+> A issue vai aparecer na coluna **"To Do"** do Kanban automaticamente.
+
+### Fluxo de cards no Kanban
+
+Quando você começa a trabalhar numa issue:
+
+1. Vai no **Projects** → abre o Kanban
+2. Arrasta o card da issue de **"To Do"** para **"In Progress"**
+
+Quando terminar e mergear o PR:
+
+- Se o commit usou `closes #N`, a issue **fecha automaticamente** e o card vai para **"Done"** sozinho
+- Se não usou `closes #N` no commit, vai na issue e fecha manualmente clicando em **"Close issue"**
+
+### Vinculando PR a uma issue existente
+
+Se a issue foi criada depois do commit (sem `closes #N`):
+
+1. Vai na issue no GitHub
+2. No lado direito, clica na **engrenagem ao lado de "Development"**
+3. Pesquisa pelo nome do PR e seleciona
+4. O PR passa a aparecer vinculado à issue
+
+---
+
 ## Comandos úteis
 
 | O que fazer | Comando |
