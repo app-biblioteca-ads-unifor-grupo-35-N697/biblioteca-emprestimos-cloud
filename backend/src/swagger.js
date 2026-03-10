@@ -10,8 +10,9 @@ const options = {
       description: 'API REST para gerenciamento de biblioteca — livros, usuários e empréstimos',
     },
     servers: [
-      { url: 'http://localhost:3001', description: 'Servidor local' }
-    ],
+  { url: 'https://biblioteca-emprestimos-cloud.onrender.com', description: 'Produção (Render)' },
+  { url: 'http://localhost:3001', description: 'Servidor local' }
+],
     components: {
       securitySchemes: {
         bearerAuth: {
