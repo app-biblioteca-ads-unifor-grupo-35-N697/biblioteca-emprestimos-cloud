@@ -66,6 +66,8 @@ apiRouter.get("/books", booksController.index);
  *   post:
  *     summary: Criar novo livro
  *     tags: [Books]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
