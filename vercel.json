@@ -1,13 +1,22 @@
 {
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/build",
-  "cleanUrls": false,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/:path*",
-      "destination": "https://seu-backend-url.com/api/:path*"
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "npm run build",
+        "outputDirectory": "build"
+      }
     }
   ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "frontend/build/index.html"
+    }
+  ],
+  "cleanUrls": false,
+  "rewrites": [],
   "headers": [
     {
       "source": "/(.*)",
