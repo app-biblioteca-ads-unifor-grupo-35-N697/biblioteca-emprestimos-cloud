@@ -43,8 +43,14 @@ function Navbar() {
             Catálogo
           </Link>
 
-          {/* Reservas - apenas com token */}
-          {token && (
+          {/* Reservas ou Painel Admin - apenas com token */}
+          {token && usuario?.tipo === 'admin' && (
+            <Link to="/admin" className="navbar-link" onClick={() => setMenuOpen(false)}>
+              Painel Admin
+            </Link>
+          )}
+
+          {token && usuario?.tipo === 'aluno' && (
             <Link to="/reservas" className="navbar-link" onClick={() => setMenuOpen(false)}>
               Reservas
             </Link>
@@ -64,7 +70,7 @@ function Navbar() {
             ) : (
               <>
                 <span className="navbar-usuario">
-                  Olá, {usuario?.nome || 'Aluno'}!
+                  Olá, {usuario?.nome || 'Usuário'}!
                 </span>
                 <button className="btn-sair" onClick={handleLogout}>
                   Sair

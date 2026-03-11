@@ -1,56 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 
-const mockReservas = [
-  {
-    id: 1,
-    livro: 'Dom Casmurro',
-    autor: 'Machado de Assis',
-    dataReserva: '2026-02-15',
-    dataDevolucao: '2026-03-15',
-    status: 'Ativa',
-  },
-  {
-    id: 2,
-    livro: 'Grande Sertão: Veredas',
-    autor: 'Guimarães Rosa',
-    dataReserva: '2026-02-20',
-    dataDevolucao: '2026-03-20',
-    status: 'Pendente',
-  },
-  {
-    id: 3,
-    livro: 'O Cortiço',
-    autor: 'Aluísio Azevedo',
-    dataReserva: '2026-01-10',
-    dataDevolucao: '2026-02-10',
-    status: 'Concluída',
-  },
-  {
-    id: 4,
-    livro: 'Memórias Póstumas de Brás Cubas',
-    autor: 'Machado de Assis',
-    dataReserva: '2026-02-01',
-    dataDevolucao: '2026-03-01',
-    status: 'Ativa',
-  },
-  {
-    id: 5,
-    livro: 'Capitães da Areia',
-    autor: 'Jorge Amado',
-    dataReserva: '2025-12-20',
-    dataDevolucao: '2026-01-20',
-    status: 'Cancelada',
-  },
-];
 
 function Reservas() {
   const [abaAtiva, setAbaAtiva] = useState('ativas');
-  const [reservas, setReservas] = useState(mockReservas);
+  const [reservas, setReservas] = useState([]);
 
   // Pegar nome do usuário do localStorage
   const usuarioJSON = localStorage.getItem('usuario');
-  const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : { nome: 'Aluno' };
+  const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : { nome: 'Aluno', email: '' };
+
+  // Carregar reservas ao montar o componente
+  useEffect(() => {
+    // Obter reservas do localStorage
+    const reservasJSON = localStorage.getItem('reservas');
+    let reservasLocal = reservasJSON ? JSON.parse(reservasJSON) : [];
+
+    // Filtrar apenas reservas do usuário logado
+    const minhasReservas = reservasLocal.filter(
+      (r) => r.usuarioEmail === usuario.email
+    );
+
+    setReservas(minhasReservas);
+  }, [usuario.email]);
 
   // Filtrar reservas por status
   const getReservasFiltradas = () => {
@@ -71,9 +43,20 @@ function Reservas() {
 
   // Cancelar reserva
   const handleCancelarReserva = (id) => {
-    setReservas(
-      reservas.map((r) => (r.id === id ? { ...r, status: 'Cancelada' } : r))
+    // Atualiza o estado local apenas para a interface
+    const novasReservas = reservas.map((r) =>
+      r.id === id ? { ...r, status: 'Cancelada' } : r
     );
+    setReservas(novasReservas);
+
+    // Persistir alteração no localStorage para que a mudança sobreviva
+    // à navegação e recarregamentos da página.
+    const reservasJSON = localStorage.getItem('reservas');
+    const reservasLocal = reservasJSON ? JSON.parse(reservasJSON) : [];
+    const atualizadas = reservasLocal.map((r) =>
+      r.id === id ? { ...r, status: 'Cancelada' } : r
+    );
+    localStorage.setItem('reservas', JSON.stringify(atualizadas));
   };
 
   const reservasFiltradas = getReservasFiltradas();

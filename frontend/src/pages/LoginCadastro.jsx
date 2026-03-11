@@ -39,17 +39,26 @@ function LoginCadastro() {
 
     // Salvar no localStorage
     const token = 'fake-token-' + Date.now();
+    
+    // Determinar tipo de usuário baseado no email
+    const tipo = email === 'admin@biblioteca.com' ? 'admin' : 'aluno';
+    const nomePadrao = tipo === 'admin' ? 'Administrador' : 'Aluno';
+    
     const usuario = {
       email,
-      nome: 'Aluno',
-      tipo: 'aluno',
+      nome: nomePadrao,
+      tipo,
     };
 
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
 
-    // Redirecionar para home
-    navigate('/');
+    // Redirecionar para /admin se admin, senão para /
+    if (tipo === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
   };
 
   // Submeter cadastro
@@ -73,10 +82,14 @@ function LoginCadastro() {
 
     // Salvar no localStorage
     const token = 'fake-token-' + Date.now();
+    
+    // Determinar tipo de usuário baseado no email
+    const tipo = email === 'admin@biblioteca.com' ? 'admin' : 'aluno';
+    
     const usuario = {
       email,
       nome,
-      tipo: 'aluno',
+      tipo,
       matricula,
     };
 
@@ -85,8 +98,12 @@ function LoginCadastro() {
 
     alert('Cadastro realizado com sucesso!');
 
-    // Redirecionar para home
-    navigate('/');
+    // Redirecionar para /admin se admin, senão para /
+    if (tipo === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
   };
 
   return (

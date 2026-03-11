@@ -1,19 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-
-const mockBooks = [
-  { id: 1, titulo: 'Dom Casmurro', autor: 'Machado de Assis', disponiveis: 3, genero: 'Romance' },
-  { id: 2, titulo: 'Grande Sertão: Veredas', autor: 'Guimarães Rosa', disponiveis: 0, genero: 'Romance' },
-  { id: 3, titulo: 'O Cortiço', autor: 'Aluísio Azevedo', disponiveis: 2, genero: 'Romance' },
-  { id: 4, titulo: 'Memórias Póstumas de Brás Cubas', autor: 'Machado de Assis', disponiveis: 1, genero: 'Romance' },
-  { id: 5, titulo: 'O Alienista', autor: 'Machado de Assis', disponiveis: 4, genero: 'Contos' },
-  { id: 6, titulo: 'Capitães da Areia', autor: 'Jorge Amado', disponiveis: 0, genero: 'Romance' },
-  { id: 7, titulo: 'Gabriela, Cravo e Canela', autor: 'Jorge Amado', disponiveis: 2, genero: 'Romance' },
-  { id: 8, titulo: 'Quincas Borba', autor: 'Machado de Assis', disponiveis: 1, genero: 'Romance' },
-];
+import { mockBooks } from '../data/mockBooks';
 
 function Catalogo() {
+  const navigate = useNavigate();
   const [busca, setBusca] = useState('');
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('todos');
 
@@ -40,6 +31,67 @@ function Catalogo() {
 
     return resultado;
   }, [busca, filtroDisponibilidade]);
+
+  // Função para reservar livro
+  const handleReservar = (livro) => {
+    const token = localStorage.getItem('token');
+    const usuarioJSON = localStorage.getItem('usuario');
+    const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : null;
+
+    // Verificar se está logado
+    if (!token || !usuario) {
+      alert('Você precisa estar logado para fazer uma reserva');
+      navigate('/login');
+      return;
+    }
+
+    // Verificar se livro está disponível
+    if (livro.disponiveis <= 0) {
+      alert('Este livro não está disponível no momento');
+      return;
+    }
+
+    // Obter reservas atuais do localStorage
+    const reservasJSON = localStorage.getItem('reservas');
+    const reservas = reservasJSON ? JSON.parse(reservasJSON) : [];
+
+    // Verificar se já existe reserva deste livro pelo mesmo usuário
+    const jaReservado = reservas.some(
+      (r) => r.livroId === livro.id && r.usuarioEmail === usuario.email
+    );
+
+    if (jaReservado) {
+      alert('Você já tem uma reserva ativa para este livro');
+      return;
+    }
+
+    // Criar nova reserva
+    const hoje = new Date();
+    const dataReserva = hoje.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // Data de devolução: 30 dias depois
+    const dataDevolucao = new Date(hoje);
+    dataDevolucao.setDate(dataDevolucao.getDate() + 30);
+    const dataDevolucaoFormatada = dataDevolucao.toISOString().split('T')[0];
+
+    const novaReserva = {
+      id: Date.now(),
+      livroId: livro.id,
+      livro: livro.titulo,
+      autor: livro.autor,
+      dataReserva,
+      dataDevolucao: dataDevolucaoFormatada,
+      status: 'Ativa',
+      usuarioEmail: usuario.email,
+      usuarioNome: usuario.nome,
+    };
+
+    // Salvar no localStorage
+    reservas.push(novaReserva);
+    localStorage.setItem('reservas', JSON.stringify(reservas));
+
+    alert(`Livro "${livro.titulo}" reservado com sucesso! Você pode conferir em "Minhas Reservas"`);
+  };
 
   return (
     <div className="catalogo-page">
@@ -96,9 +148,20 @@ function Catalogo() {
                     )}
                   </div>
 
-                  <Link to={`/livro/${livro.id}`} className="btn-details">
-                    Ver Detalhes
-                  </Link>
+                  <div className="catalogo-card-actions">
+                    <button
+                      className={`btn-reservar ${
+                        livro.disponiveis > 0 ? 'btn-reservar-ativo' : 'btn-reservar-desabilitado'
+                      }`}
+                      onClick={() => handleReservar(livro)}
+                      disabled={livro.disponiveis <= 0}
+                    >
+                      Reservar
+                    </button>
+                    <Link to={`/livro/${livro.id}`} className="btn-details">
+                      Ver Detalhes
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>

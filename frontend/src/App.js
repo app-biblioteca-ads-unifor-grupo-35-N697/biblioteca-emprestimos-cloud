@@ -3,12 +3,22 @@ import Home from './pages/Home';
 import Catalogo from './pages/Catalogo';
 import Reservas from './pages/Reservas';
 import LoginCadastro from './pages/LoginCadastro';
+import PainelAdmin from './pages/PainelAdmin';
 import './App.css';
 
-// Componente de rota protegida
+// Componente de rota protegida (para alunos)
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/login" replace />;
+}
+
+// Componente de rota protegida para admin
+function AdminRoute({ children }) {
+  const token = localStorage.getItem('token');
+  const usuarioJSON = localStorage.getItem('usuario');
+  const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : null;
+  
+  return token && usuario?.tipo === 'admin' ? children : <Navigate to="/login" replace />;
 }
 
 function App() {
@@ -24,6 +34,14 @@ function App() {
             <ProtectedRoute>
               <Reservas />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <PainelAdmin />
+            </AdminRoute>
           }
         />
         <Route path="/login" element={<LoginCadastro />} />
