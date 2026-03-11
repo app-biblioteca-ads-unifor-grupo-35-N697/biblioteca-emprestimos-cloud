@@ -12,13 +12,11 @@ Enquanto tiver rodando local:
 http://localhost:3001
 ```
 
-Em produção (após o deploy no Render):
+Em produção (Render):
 
 ```
-https://url-do-render.onrender.com
+https://biblioteca-emprestimos-cloud.onrender.com
 ```
-
-> Quando o deploy estiver feito, a gente atualiza aqui com a URL real.
 
 ---
 
