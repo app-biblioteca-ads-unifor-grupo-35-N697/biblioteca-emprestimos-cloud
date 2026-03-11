@@ -1,11 +1,16 @@
 {
   "name": "library-manager",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API de gerenciamento de empréstimos de livros",
+  "main": "src/index.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "test": "jest",
-    "dev": "nodemon src/index.js"
+    "build": "echo 'Build completed'"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +30,7 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
     "prisma": "^5.22.0",
     "supertest": "^7.0.0"
   }
