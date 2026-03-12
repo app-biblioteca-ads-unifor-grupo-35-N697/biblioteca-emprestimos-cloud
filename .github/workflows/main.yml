@@ -6,14 +6,13 @@ on:
   pull_request:
     branches: [main]
 
-defaults:
-  run:
-    working-directory: backend
-
 jobs:
   test:
     name: Testes automatizados
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - name: Checkout do código
