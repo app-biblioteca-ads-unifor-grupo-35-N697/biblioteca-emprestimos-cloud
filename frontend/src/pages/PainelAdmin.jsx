@@ -1,17 +1,54 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { mockBooks as initialBooks } from '../data/mockBooks';
+import { apiRequest } from '../services/api';
+import { getFriendlyError } from '../utils/errorMessages';
 
 function PainelAdmin() {
-  const [livros, setLivros] = useState(initialBooks);
+  const [livros, setLivros] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [actionState, setActionState] = useState({ type: null, bookId: null });
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [busca, setBusca] = useState('');
   const [formData, setFormData] = useState({
     titulo: '',
     autor: '',
-    genero: '',
     disponiveis: '',
   });
+
+  useEffect(() => {
+    async function carregarLivros() {
+      try {
+        setIsLoading(true);
+        const data = await apiRequest('/api/books');
+        const detalhes = await Promise.all(
+          data.map(async (livro) => {
+            try {
+              return await apiRequest(`/api/books/${livro.id}`);
+            } catch (error) {
+              return livro;
+            }
+          })
+        );
+
+        const livrosMapeados = detalhes.map((livro) => ({
+          id: livro.id,
+          titulo: livro.title || 'Sem titulo',
+          autor: livro.author || 'Autor não informado',
+          genero: 'N/A',
+          disponiveis: Number.isFinite(livro.quantiteAvailable)
+            ? livro.quantiteAvailable
+            : 0,
+        }));
+        setLivros(livrosMapeados);
+      } catch (error) {
+        alert(getFriendlyError(error, 'Falha ao carregar livros'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    carregarLivros();
+  }, []);
 
   // Filtrar livros por busca
   const livrosFiltrados = useMemo(() => {
@@ -24,33 +61,109 @@ function PainelAdmin() {
     );
   }, [livros, busca]);
 
+  const isActionInProgress = actionState.type !== null;
+  const isAdding = actionState.type === 'adding';
+
   // Adicionar novo livro
-  const handleAdicionarLivro = (e) => {
+  const handleAdicionarLivro = async (e) => {
     e.preventDefault();
 
-    if (!formData.titulo || !formData.autor || !formData.genero || formData.disponiveis === '') {
+    if (!formData.titulo || !formData.autor || formData.disponiveis === '') {
       alert('Preencha todos os campos');
       return;
     }
 
-    const novoLivro = {
-      id: Date.now(),
-      titulo: formData.titulo,
-      autor: formData.autor,
-      genero: formData.genero,
-      disponiveis: parseInt(formData.disponiveis),
-    };
+    try {
+      setActionState({ type: 'adding', bookId: null });
+      const novoLivroApi = await apiRequest('/api/books', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: formData.titulo,
+          author: formData.autor,
+          quantiteAvailable: Number(formData.disponiveis),
+        }),
+      });
 
-    setLivros([...livros, novoLivro]);
-    setFormData({ titulo: '', autor: '', genero: '', disponiveis: '' });
-    setMostrarFormulario(false);
-    alert('Livro adicionado com sucesso!');
+      const novoLivro = {
+        id: novoLivroApi.id,
+        titulo: novoLivroApi.title,
+        autor: novoLivroApi.author || formData.autor,
+        genero: 'N/A',
+        disponiveis: novoLivroApi.quantiteAvailable ?? Number(formData.disponiveis),
+      };
+
+      setLivros((prev) => [novoLivro, ...prev]);
+      setFormData({ titulo: '', autor: '', disponiveis: '' });
+      setMostrarFormulario(false);
+      alert('Livro adicionado com sucesso!');
+    } catch (error) {
+      alert(getFriendlyError(error, 'Falha ao adicionar livro'));
+    } finally {
+      setActionState({ type: null, bookId: null });
+    }
+  };
+
+  const handleEditarLivro = async (livro) => {
+    const novoTitulo = window.prompt('Novo título:', livro.titulo);
+    if (novoTitulo === null) return;
+
+    const novoAutor = window.prompt('Novo autor:', livro.autor);
+    if (novoAutor === null) return;
+
+    const novaQuantidadeStr = window.prompt(
+      'Nova quantidade disponível:',
+      String(livro.disponiveis)
+    );
+    if (novaQuantidadeStr === null) return;
+
+    const novaQuantidade = Number(novaQuantidadeStr);
+    if (Number.isNaN(novaQuantidade) || novaQuantidade < 0) {
+      alert('Quantidade inválida');
+      return;
+    }
+
+    try {
+      setActionState({ type: 'editing', bookId: livro.id });
+      const livroAtualizadoApi = await apiRequest(`/api/books/${livro.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: novoTitulo,
+          author: novoAutor,
+          quantiteAvailable: novaQuantidade,
+        }),
+      });
+
+      setLivros((prev) =>
+        prev.map((item) =>
+          item.id === livro.id
+            ? {
+                ...item,
+                titulo: livroAtualizadoApi.title ?? novoTitulo,
+                autor: livroAtualizadoApi.author ?? novoAutor,
+                disponiveis: livroAtualizadoApi.quantiteAvailable ?? novaQuantidade,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      alert(getFriendlyError(error, 'Falha ao atualizar livro'));
+    } finally {
+      setActionState({ type: null, bookId: null });
+    }
   };
 
   // Excluir livro
-  const handleExcluirLivro = (id) => {
+  const handleExcluirLivro = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir este livro?')) {
-      setLivros(livros.filter((livro) => livro.id !== id));
+      try {
+        setActionState({ type: 'deleting', bookId: id });
+        await apiRequest(`/api/books/${id}`, { method: 'DELETE' });
+        setLivros((prev) => prev.filter((livro) => livro.id !== id));
+      } catch (error) {
+        alert(getFriendlyError(error, 'Falha ao excluir livro'));
+      } finally {
+        setActionState({ type: null, bookId: null });
+      }
     }
   };
 
@@ -86,6 +199,7 @@ function PainelAdmin() {
             <button
               className="btn-submit btn-adicionar"
               onClick={() => setMostrarFormulario(!mostrarFormulario)}
+              disabled={isActionInProgress}
             >
               {mostrarFormulario ? 'Cancelar' : '+ Adicionar Livro'}
             </button>
@@ -106,6 +220,7 @@ function PainelAdmin() {
                       placeholder="Digite o título do livro"
                       value={formData.titulo}
                       onChange={handleInputChange}
+                      disabled={isAdding}
                       required
                     />
                   </div>
@@ -119,25 +234,13 @@ function PainelAdmin() {
                       placeholder="Digite o nome do autor"
                       value={formData.autor}
                       onChange={handleInputChange}
+                      disabled={isAdding}
                       required
                     />
                   </div>
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="genero">Gênero</label>
-                    <input
-                      id="genero"
-                      type="text"
-                      name="genero"
-                      placeholder="Ex: Romance, Ficção Científica..."
-                      value={formData.genero}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
                   <div className="form-group">
                     <label htmlFor="disponiveis">Quantidade Disponível</label>
                     <input
@@ -148,6 +251,7 @@ function PainelAdmin() {
                       value={formData.disponiveis}
                       onChange={handleInputChange}
                       min="0"
+                      disabled={isAdding}
                       required
                     />
                   </div>
@@ -155,7 +259,7 @@ function PainelAdmin() {
 
                 <div className="painel-formulario-actions">
                   <button type="submit" className="btn-submit btn-adicionar-livro">
-                    Adicionar Livro
+                    {isAdding ? 'Adicionando...' : 'Adicionar Livro'}
                   </button>
                 </div>
               </form>
@@ -169,7 +273,11 @@ function PainelAdmin() {
             </p>
           </div>
 
-          {livrosFiltrados.length > 0 ? (
+          {isLoading ? (
+            <div className="painel-empty fade-in">
+              <p>Carregando livros...</p>
+            </div>
+          ) : livrosFiltrados.length > 0 ? (
             <div className="painel-livros-grid fade-in">
               {livrosFiltrados.map((livro) => (
                 <div key={livro.id} className="painel-livro-card">
@@ -186,12 +294,26 @@ function PainelAdmin() {
                       )}
                     </p>
                   </div>
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleExcluirLivro(livro.id)}
-                  >
-                    Excluir
-                  </button>
+                  <div className="catalogo-card-actions">
+                    <button
+                      className="btn-details"
+                      onClick={() => handleEditarLivro(livro)}
+                      disabled={isActionInProgress}
+                    >
+                      {actionState.type === 'editing' && actionState.bookId === livro.id
+                        ? 'Salvando...'
+                        : 'Editar'}
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleExcluirLivro(livro.id)}
+                      disabled={isActionInProgress}
+                    >
+                      {actionState.type === 'deleting' && actionState.bookId === livro.id
+                        ? 'Excluindo...'
+                        : 'Excluir'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

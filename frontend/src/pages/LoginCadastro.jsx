@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { apiRequest } from '../services/api';
+import { getFriendlyError } from '../utils/errorMessages';
+
+function getUserIdFromToken(token) {
+  try {
+    const payloadBase64Url = token.split('.')[1];
+    const payloadBase64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payloadJson = atob(payloadBase64);
+    const payload = JSON.parse(payloadJson);
+    return payload?.id || null;
+  } catch (error) {
+    return null;
+  }
+}
 
 function LoginCadastro() {
   const navigate = useNavigate();
@@ -17,6 +31,7 @@ function LoginCadastro() {
   const [matricula, setMatricula] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [aceitoTermos, setAceitoTermos] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Limpar formulários ao trocar de aba
   useEffect(() => {
@@ -29,7 +44,7 @@ function LoginCadastro() {
   }, [abaAtiva]);
 
   // Submeter login
-  const handleSubmitLogin = (e) => {
+  const handleSubmitLogin = async (e) => {
     e.preventDefault();
 
     if (!email || !senha) {
@@ -37,32 +52,46 @@ function LoginCadastro() {
       return;
     }
 
-    // Salvar no localStorage
-    const token = 'fake-token-' + Date.now();
-    
-    // Determinar tipo de usuário baseado no email
-    const tipo = email === 'admin@biblioteca.com' ? 'admin' : 'aluno';
-    const nomePadrao = tipo === 'admin' ? 'Administrador' : 'Aluno';
-    
-    const usuario = {
-      email,
-      nome: nomePadrao,
-      tipo,
-    };
+    try {
+      setIsSubmitting(true);
+      const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password: senha }),
+      });
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('usuario', JSON.stringify(usuario));
+      const token = data?.token;
+      if (!token) {
+        throw new Error('Token nao retornado pelo servidor');
+      }
 
-    // Redirecionar para /admin se admin, senão para /
-    if (tipo === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/');
+      const tipo = email === 'admin@biblioteca.com' ? 'admin' : 'aluno';
+      const nomePadrao = tipo === 'admin' ? 'Administrador' : 'Aluno';
+      const userId = getUserIdFromToken(token);
+
+      const usuario = {
+        id: userId,
+        email,
+        nome: nomePadrao,
+        tipo,
+      };
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+
+      if (tipo === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      alert(getFriendlyError(error, 'Falha ao realizar login'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Submeter cadastro
-  const handleSubmitCadastro = (e) => {
+  const handleSubmitCadastro = async (e) => {
     e.preventDefault();
 
     if (!nome || !email || !matricula || !senha || !confirmarSenha) {
@@ -80,29 +109,47 @@ function LoginCadastro() {
       return;
     }
 
-    // Salvar no localStorage
-    const token = 'fake-token-' + Date.now();
-    
-    // Determinar tipo de usuário baseado no email
-    const tipo = email === 'admin@biblioteca.com' ? 'admin' : 'aluno';
-    
-    const usuario = {
-      email,
-      nome,
-      tipo,
-      matricula,
-    };
+    try {
+      setIsSubmitting(true);
+      await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name: nome, email, password: senha }),
+      });
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('usuario', JSON.stringify(usuario));
+      const loginData = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password: senha }),
+      });
 
-    alert('Cadastro realizado com sucesso!');
+      const token = loginData?.token;
+      if (!token) {
+        throw new Error('Token nao retornado pelo servidor');
+      }
 
-    // Redirecionar para /admin se admin, senão para /
-    if (tipo === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/');
+      const tipo = email === 'admin@biblioteca.com' ? 'admin' : 'aluno';
+      const userId = getUserIdFromToken(token);
+      const usuario = {
+        id: userId,
+        email,
+        nome,
+        tipo,
+        matricula,
+      };
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+
+      alert('Cadastro realizado com sucesso!');
+
+      if (tipo === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      alert(getFriendlyError(error, 'Falha ao realizar cadastro'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -161,7 +208,7 @@ function LoginCadastro() {
               </div>
 
               <button type="submit" className="btn-submit btn-entrar">
-                Entrar
+                {isSubmitting ? 'Entrando...' : 'Entrar'}
               </button>
             </form>
           )}
@@ -241,7 +288,7 @@ function LoginCadastro() {
               </div>
 
               <button type="submit" className="btn-submit btn-cadastrar">
-                Cadastrar
+                {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
               </button>
             </form>
           )}

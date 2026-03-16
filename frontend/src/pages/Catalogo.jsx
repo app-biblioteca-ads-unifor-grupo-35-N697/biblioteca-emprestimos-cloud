@@ -1,16 +1,54 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { mockBooks } from '../data/mockBooks';
+import { apiRequest } from '../services/api';
+import { getFriendlyError } from '../utils/errorMessages';
 
 function Catalogo() {
   const navigate = useNavigate();
+  const [livros, setLivros] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('todos');
 
+  useEffect(() => {
+    async function carregarLivros() {
+      try {
+        setIsLoading(true);
+        const data = await apiRequest('/api/books');
+        const detalhes = await Promise.all(
+          data.map(async (livro) => {
+            try {
+              return await apiRequest(`/api/books/${livro.id}`);
+            } catch (error) {
+              return livro;
+            }
+          })
+        );
+
+        const livrosMapeados = detalhes.map((livro) => ({
+          id: livro.id,
+          titulo: livro.title || 'Sem titulo',
+          autor: livro.author || 'Autor não informado',
+          genero: 'N/A',
+          disponiveis: Number.isFinite(livro.quantiteAvailable)
+            ? livro.quantiteAvailable
+            : 0,
+        }));
+        setLivros(livrosMapeados);
+      } catch (error) {
+        alert(getFriendlyError(error, 'Falha ao carregar livros'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    carregarLivros();
+  }, []);
+
   // Filtrar livros em tempo real
   const livrosFiltrados = useMemo(() => {
-    let resultado = mockBooks;
+    let resultado = livros;
 
     // Filtro de busca (título ou autor)
     if (busca.trim()) {
@@ -30,16 +68,14 @@ function Catalogo() {
     }
 
     return resultado;
-  }, [busca, filtroDisponibilidade]);
+  }, [livros, busca, filtroDisponibilidade]);
 
   // Função para reservar livro
-  const handleReservar = (livro) => {
+  const handleReservar = async (livro) => {
     const token = localStorage.getItem('token');
-    const usuarioJSON = localStorage.getItem('usuario');
-    const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : null;
 
     // Verificar se está logado
-    if (!token || !usuario) {
+    if (!token) {
       alert('Você precisa estar logado para fazer uma reserva');
       navigate('/login');
       return;
@@ -51,46 +87,24 @@ function Catalogo() {
       return;
     }
 
-    // Obter reservas atuais do localStorage
-    const reservasJSON = localStorage.getItem('reservas');
-    const reservas = reservasJSON ? JSON.parse(reservasJSON) : [];
+    try {
+      await apiRequest('/api/loans', {
+        method: 'POST',
+        body: JSON.stringify({ bookId: livro.id }),
+      });
 
-    // Verificar se já existe reserva deste livro pelo mesmo usuário
-    const jaReservado = reservas.some(
-      (r) => r.livroId === livro.id && r.usuarioEmail === usuario.email
-    );
+      setLivros((prev) =>
+        prev.map((item) =>
+          item.id === livro.id
+            ? { ...item, disponiveis: Math.max(0, item.disponiveis - 1) }
+            : item
+        )
+      );
 
-    if (jaReservado) {
-      alert('Você já tem uma reserva ativa para este livro');
-      return;
+      alert(`Livro "${livro.titulo}" reservado com sucesso! Confira em "Minhas Reservas".`);
+    } catch (error) {
+      alert(getFriendlyError(error, 'Falha ao reservar livro'));
     }
-
-    // Criar nova reserva
-    const hoje = new Date();
-    const dataReserva = hoje.toISOString().split('T')[0]; // YYYY-MM-DD
-
-    // Data de devolução: 30 dias depois
-    const dataDevolucao = new Date(hoje);
-    dataDevolucao.setDate(dataDevolucao.getDate() + 30);
-    const dataDevolucaoFormatada = dataDevolucao.toISOString().split('T')[0];
-
-    const novaReserva = {
-      id: Date.now(),
-      livroId: livro.id,
-      livro: livro.titulo,
-      autor: livro.autor,
-      dataReserva,
-      dataDevolucao: dataDevolucaoFormatada,
-      status: 'Ativa',
-      usuarioEmail: usuario.email,
-      usuarioNome: usuario.nome,
-    };
-
-    // Salvar no localStorage
-    reservas.push(novaReserva);
-    localStorage.setItem('reservas', JSON.stringify(reservas));
-
-    alert(`Livro "${livro.titulo}" reservado com sucesso! Você pode conferir em "Minhas Reservas"`);
   };
 
   return (
@@ -125,7 +139,11 @@ function Catalogo() {
           </div>
 
           {/* Grid de Livros */}
-          {livrosFiltrados.length > 0 ? (
+          {isLoading ? (
+            <div className="catalogo-empty fade-in">
+              <p>Carregando livros...</p>
+            </div>
+          ) : livrosFiltrados.length > 0 ? (
             <div className="catalogo-grid fade-in">
               {livrosFiltrados.map((livro) => (
                 <div key={livro.id} className="catalogo-card">
