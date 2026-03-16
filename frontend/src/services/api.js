@@ -1,0 +1,37 @@
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+
+function buildUrl(path) {
+  if (!path.startsWith("/")) return `${API_BASE_URL}/${path}`;
+  return `${API_BASE_URL}${path}`;
+}
+
+export async function apiRequest(path, options = {}) {
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  const response = await fetch(buildUrl(path), {
+    ...options,
+    headers,
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? await response.json()
+    : await response.text();
+
+  if (!response.ok) {
+    const message =
+      typeof data === "object" && data !== null && "message" in data
+        ? data.message
+        : "Erro ao processar a requisicao";
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+export { API_BASE_URL };
