@@ -1,28 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { apiRequest } from '../services/api';
+import { getFriendlyError } from '../utils/errorMessages';
 
 
 function Reservas() {
   const [abaAtiva, setAbaAtiva] = useState('ativas');
   const [reservas, setReservas] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Pegar nome do usuário do localStorage
   const usuarioJSON = localStorage.getItem('usuario');
   const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : { nome: 'Aluno', email: '' };
 
-  // Carregar reservas ao montar o componente
+  // Carregar reservas reais da API ao montar o componente
   useEffect(() => {
-    // Obter reservas do localStorage
-    const reservasJSON = localStorage.getItem('reservas');
-    let reservasLocal = reservasJSON ? JSON.parse(reservasJSON) : [];
+    async function carregarReservas() {
+      if (!usuario?.id) {
+        setReservas([]);
+        setIsLoading(false);
+        return;
+      }
 
-    // Filtrar apenas reservas do usuário logado
-    const minhasReservas = reservasLocal.filter(
-      (r) => r.usuarioEmail === usuario.email
-    );
+      try {
+        setIsLoading(true);
+        const loansData = await apiRequest('/api/loans');
+        const minhasLoans = loansData.filter((loan) => loan.userId === usuario.id);
 
-    setReservas(minhasReservas);
-  }, [usuario.email]);
+        const uniqueBookIds = [...new Set(minhasLoans.map((loan) => loan.bookId))];
+        const booksDetalhes = await Promise.all(
+          uniqueBookIds.map(async (bookId) => {
+            try {
+              const book = await apiRequest(`/api/books/${bookId}`);
+              return [bookId, book];
+            } catch (error) {
+              return [bookId, null];
+            }
+          })
+        );
+
+        const bookById = Object.fromEntries(booksDetalhes);
+
+        const minhasReservas = minhasLoans.map((loan) => {
+          const book = bookById[loan.bookId] || {};
+          return {
+            id: loan.id,
+            livro: book.title || 'Livro',
+            autor: book.author || 'Autor não informado',
+            dataReserva: loan.loanDate,
+            dataDevolucao: loan.returnDate,
+            status: loan.isReturned ? 'Concluída' : 'Ativa',
+          };
+        });
+
+        setReservas(minhasReservas);
+      } catch (error) {
+        alert(getFriendlyError(error, 'Falha ao carregar reservas'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    carregarReservas();
+  }, [usuario?.id]);
 
   // Filtrar reservas por status
   const getReservasFiltradas = () => {
@@ -37,26 +77,26 @@ function Reservas() {
 
   // Formatar data
   const formatarData = (data) => {
-    const [ano, mes, dia] = data.split('-');
+    if (!data) return '-';
+    const date = new Date(data);
+    const dia = String(date.getDate()).padStart(2, '0');
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const ano = date.getFullYear();
     return `${dia}/${mes}/${ano}`;
   };
 
-  // Cancelar reserva
-  const handleCancelarReserva = (id) => {
-    // Atualiza o estado local apenas para a interface
-    const novasReservas = reservas.map((r) =>
-      r.id === id ? { ...r, status: 'Cancelada' } : r
-    );
-    setReservas(novasReservas);
-
-    // Persistir alteração no localStorage para que a mudança sobreviva
-    // à navegação e recarregamentos da página.
-    const reservasJSON = localStorage.getItem('reservas');
-    const reservasLocal = reservasJSON ? JSON.parse(reservasJSON) : [];
-    const atualizadas = reservasLocal.map((r) =>
-      r.id === id ? { ...r, status: 'Cancelada' } : r
-    );
-    localStorage.setItem('reservas', JSON.stringify(atualizadas));
+  // Devolver reserva
+  const handleDevolverReserva = async (id) => {
+    try {
+      await apiRequest(`/api/loans/${id}/return`, { method: 'POST' });
+      setReservas((prev) =>
+        prev.map((reserva) =>
+          reserva.id === id ? { ...reserva, status: 'Concluída' } : reserva
+        )
+      );
+    } catch (error) {
+      alert(getFriendlyError(error, 'Falha ao devolver livro'));
+    }
   };
 
   const reservasFiltradas = getReservasFiltradas();
@@ -70,8 +110,6 @@ function Reservas() {
         return '#f59e0b';
       case 'Concluída':
         return '#3b82f6';
-      case 'Cancelada':
-        return '#ef4444';
       default:
         return '#6b7280';
     }
@@ -86,8 +124,6 @@ function Reservas() {
         return 'badge-pendente';
       case 'Concluída':
         return 'badge-concluida';
-      case 'Cancelada':
-        return 'badge-cancelada';
       default:
         return '';
     }
@@ -125,7 +161,11 @@ function Reservas() {
           </div>
 
           {/* Lista de Reservas */}
-          {reservasFiltradas.length > 0 ? (
+          {isLoading ? (
+            <div className="reservas-empty fade-in">
+              <p>Carregando reservas...</p>
+            </div>
+          ) : reservasFiltradas.length > 0 ? (
             <div className="reservas-list fade-in">
               {reservasFiltradas.map((reserva) => (
                 <div
@@ -149,9 +189,9 @@ function Reservas() {
                     {reserva.status === 'Ativa' && (
                       <button
                         className="btn-cancelar"
-                        onClick={() => handleCancelarReserva(reserva.id)}
+                        onClick={() => handleDevolverReserva(reserva.id)}
                       >
-                        Cancelar
+                        Devolver
                       </button>
                     )}
                   </div>

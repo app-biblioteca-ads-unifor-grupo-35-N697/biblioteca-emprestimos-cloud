@@ -24,10 +24,10 @@ export async function apiRequest(path, options = {}) {
     : await response.text();
 
   if (!response.ok) {
-    const message =
-      typeof data === "object" && data !== null && "message" in data
-        ? data.message
-        : "Erro ao processar a requisicao";
+    const isObjectData = typeof data === "object" && data !== null;
+    const message = isObjectData
+      ? data.message || data.error || "Erro ao processar a requisicao"
+      : "Erro ao processar a requisicao";
     throw new Error(message);
   }
 
