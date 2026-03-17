@@ -1,5 +1,4 @@
 name: CI/CD Backend
-
 on:
   push:
     branches: [main]
@@ -40,6 +39,9 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Remover .env de produção
+        run: rm -f .env
 
       - name: Gerar Prisma Client
         run: npx prisma generate
