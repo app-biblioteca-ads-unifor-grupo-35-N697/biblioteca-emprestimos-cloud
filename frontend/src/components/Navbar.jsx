@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { clearStoredSession, getStoredToken, getStoredUser } from '../utils/auth';
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   
   // Verificar se existe token no localStorage
-  const token = localStorage.getItem('token');
-  const usuarioJSON = localStorage.getItem('usuario');
-  const usuario = usuarioJSON ? JSON.parse(usuarioJSON) : null;
+  const token = getStoredToken();
+  const usuario = getStoredUser();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
+    clearStoredSession();
     navigate('/');
     setMenuOpen(false);
   };

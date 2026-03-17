@@ -3,18 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { apiRequest } from '../services/api';
 import { getFriendlyError } from '../utils/errorMessages';
-
-function getUserIdFromToken(token) {
-  try {
-    const payloadBase64Url = token.split('.')[1];
-    const payloadBase64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const payloadJson = atob(payloadBase64);
-    const payload = JSON.parse(payloadJson);
-    return payload?.id || null;
-  } catch (error) {
-    return null;
-  }
-}
+import { getUserIdFromToken } from '../utils/auth';
 
 function LoginCadastro() {
   const navigate = useNavigate();
@@ -46,6 +35,8 @@ function LoginCadastro() {
   // Submeter login
   const handleSubmitLogin = async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (!email || !senha) {
       alert('Preencha todos os campos');
@@ -93,6 +84,8 @@ function LoginCadastro() {
   // Submeter cadastro
   const handleSubmitCadastro = async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (!nome || !email || !matricula || !senha || !confirmarSenha) {
       alert('Preencha todos os campos');
@@ -207,7 +200,7 @@ function LoginCadastro() {
                 />
               </div>
 
-              <button type="submit" className="btn-submit btn-entrar">
+              <button type="submit" className="btn-submit btn-entrar" disabled={isSubmitting}>
                 {isSubmitting ? 'Entrando...' : 'Entrar'}
               </button>
             </form>
@@ -287,7 +280,7 @@ function LoginCadastro() {
                 <label htmlFor="aceito-termos">Aceito os termos de uso</label>
               </div>
 
-              <button type="submit" className="btn-submit btn-cadastrar">
+              <button type="submit" className="btn-submit btn-cadastrar" disabled={isSubmitting}>
                 {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
               </button>
             </form>
