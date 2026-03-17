@@ -37,7 +37,7 @@ const options = {
             id:                { type: 'string', example: 'uuid' },
             title:             { type: 'string', example: 'Clean Code' },
             author:            { type: 'string', example: 'Robert C. Martin' },
-            quantiteAvailable: { type: 'integer', example: 5 }
+            quantityAvailable: { type: 'integer', example: 5 }
           }
         },
         Loan: {
