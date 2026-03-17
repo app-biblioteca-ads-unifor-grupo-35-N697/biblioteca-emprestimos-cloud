@@ -47,14 +47,14 @@ describe('Users Model', () => {
   });
 
   it('deve criar um novo usuário com senha hasheada', async () => {
-    const mockUser = { id: 'uuid-novo', name: 'New User', email: 'new@email.com', password: 'hashedpassword' };
+    const mockUser = { id: 'uuid-novo', name: 'New User', email: 'new@email.com', password: 'hashedpassword', role: 'user' };
     bcrypt.hashSync.mockReturnValue('hashedpassword');
     prisma.user.create.mockResolvedValue(mockUser);
 
     const newUser = await usersModel.createUser('New User', 'new@email.com', 'password123');
     expect(newUser).toEqual(mockUser);
     expect(prisma.user.create).toHaveBeenCalledWith({
-      data: { name: 'New User', email: 'new@email.com', password: 'hashedpassword' }
+      data: { name: 'New User', email: 'new@email.com', password: 'hashedpassword', role: 'user' }
     });
   });
 });
