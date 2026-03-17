@@ -8,8 +8,20 @@ module.exports = {
 
   getUserByEmail: (email) => prisma.user.findUnique({ where: { email } }),
 
-  createUser: (name, email, password) =>
+  createUser: (name, email, password, role = 'user') =>
     prisma.user.create({
-      data: { name, email, password: bcrypt.hashSync(password, 10) }
-    })
+      data: { name, email, password: bcrypt.hashSync(password, 10), role }
+    }),
+
+  updateUser: (id, data) =>
+    prisma.user.update({
+      where: { id },
+      data
+    }),
+
+  deleteUser: (id) =>
+    prisma.user.delete({ where: { id } }),
+
+  countAdmins: () =>
+    prisma.user.count({ where: { role: 'admin' } }),
 }

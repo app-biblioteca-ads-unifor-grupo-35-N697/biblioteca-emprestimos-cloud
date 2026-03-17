@@ -27,7 +27,8 @@ const options = {
           properties: {
             id:    { type: 'string', example: 'uuid' },
             name:  { type: 'string', example: 'João Silva' },
-            email: { type: 'string', example: 'joao@email.com' }
+            email: { type: 'string', example: 'joao@email.com' },
+            role:  { type: 'string', example: 'admin', description: 'admin ou user' }
           }
         },
         Book: {
@@ -36,7 +37,7 @@ const options = {
             id:                { type: 'string', example: 'uuid' },
             title:             { type: 'string', example: 'Clean Code' },
             author:            { type: 'string', example: 'Robert C. Martin' },
-            quantiteAvailable: { type: 'integer', example: 5 }
+            quantityAvailable: { type: 'integer', example: 5 }
           }
         },
         Loan: {

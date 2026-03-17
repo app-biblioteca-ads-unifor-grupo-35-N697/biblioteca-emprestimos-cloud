@@ -1,8 +1,10 @@
 
 const express = require("express");
 const apiRouter = express.Router();
+
 const booksController = require("../controllers/books-controller");
 const loansController = require("../controllers/loans-controller");
+const usersRouter = require("./users");
 const { ensureAuth } = require("../middlewares/auth-middleware");
 
 /**
@@ -30,6 +32,10 @@ const { ensureAuth } = require("../middlewares/auth-middleware");
  *       200: { description: Lista de livros encontrados }
  *       404: { description: Nenhum livro encontrado }
  */
+
+// Rotas de usuários (CRUD restrito a admin)
+apiRouter.use("/users", usersRouter);
+
 apiRouter.get("/books/search", booksController.findByAuthor);
 
 /**

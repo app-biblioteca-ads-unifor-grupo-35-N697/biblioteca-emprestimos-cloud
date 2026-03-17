@@ -21,4 +21,12 @@ module.exports = {
       return res.status(401).json({ message: "Token inválido" });
     }
   },
+
+  // Middleware RBAC: permite acesso apenas a usuários com role 'admin'
+  ensureAdmin: (req, res, next) => {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Acesso negado: apenas administradores podem executar esta ação.' });
+    }
+    next();
+  },
 };
