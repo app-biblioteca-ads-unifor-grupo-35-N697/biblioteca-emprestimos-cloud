@@ -1,29 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { apiRequest } from '../services/api';
+import { fetchBooksWithDetails } from '../services/books';
+import { getFriendlyError } from '../utils/errorMessages';
 
-const featuredBooks = [
-  {
-    id: 1,
-    title: 'Dom Casmurro',
-    author: 'Machado de Assis',
-    available: true,
-  },
-  {
-    id: 2,
-    title: 'Grande Sertão: Veredas',
-    author: 'Guimarães Rosa',
-    available: false,
-  },
-  {
-    id: 3,
-    title: 'O Cortiço',
-    author: 'Aluísio Azevedo',
-    available: true,
-  },
+const STAT_INICIAL = [
+  { id: 'titulos',     icon: '📚', color: '#3b82f6', value: '—', label: 'Títulos no Acervo' },
+  { id: 'disponiveis', icon: '✅', color: '#10b981', value: '—', label: 'Exemplares Disponíveis' },
+  { id: 'ativos',      icon: '🔖', color: '#f59e0b', value: '—', label: 'Empréstimos Ativos' },
+  { id: 'registrados', icon: '📈', color: '#06b6d4', value: '—', label: 'Empréstimos Registrados' },
 ];
 
 function Home() {
+  const [featuredBooks, setFeaturedBooks] = useState([]);
+  const [stats, setStats] = useState(STAT_INICIAL);
+  const [isLoading, setIsLoading] = useState(true);
+  const [erroMsg, setErroMsg] = useState('');
+
+  useEffect(() => {
+    async function carregarDashboard() {
+      try {
+        const [books, loans] = await Promise.all([
+          fetchBooksWithDetails(),
+          apiRequest('/api/loans'),
+        ]);
+
+        // Livros em destaque: os 3 com mais exemplares disponíveis
+        const ordenados = [...books].sort((a, b) => {
+          if (b.disponiveis !== a.disponiveis) return b.disponiveis - a.disponiveis;
+          return a.titulo.localeCompare(b.titulo);
+        });
+        setFeaturedBooks(ordenados.slice(0, 3));
+
+        setStats([
+          {
+            id: 'titulos',
+            icon: '📚',
+            color: '#3b82f6',
+            value: books.length,
+            label: 'Títulos no Acervo',
+          },
+          {
+            id: 'disponiveis',
+            icon: '✅',
+            color: '#10b981',
+            value: books.reduce((soma, b) => soma + b.disponiveis, 0),
+            label: 'Exemplares Disponíveis',
+          },
+          {
+            id: 'ativos',
+            icon: '🔖',
+            color: '#f59e0b',
+            value: loans.filter((l) => !l.isReturned).length,
+            label: 'Empréstimos Ativos',
+          },
+          {
+            id: 'registrados',
+            icon: '📈',
+            color: '#06b6d4',
+            value: loans.length,
+            label: 'Empréstimos Registrados',
+          },
+        ]);
+      } catch (error) {
+        setErroMsg(getFriendlyError(error, 'Não foi possível carregar os dados do acervo.'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    carregarDashboard();
+  }, []);
+
   return (
     <div className="home-page">
       <Navbar />
@@ -44,47 +93,45 @@ function Home() {
       </section>
 
       <section className="home-stats fade-in">
-        <div className="stat-card" style={{ borderLeftColor: '#3b82f6' }}>
-          <div className="stat-icon">📚</div>
-          <div className="stat-number">124</div>
-          <div className="stat-label">Livros no Acervo</div>
-        </div>
-        <div className="stat-card" style={{ borderLeftColor: '#10b981' }}>
-          <div className="stat-icon">✅</div>
-          <div className="stat-number">89</div>
-          <div className="stat-label">Disponíveis</div>
-        </div>
-        <div className="stat-card" style={{ borderLeftColor: '#f59e0b' }}>
-          <div className="stat-icon">🔖</div>
-          <div className="stat-number">35</div>
-          <div className="stat-label">Reservas Ativas</div>
-        </div>
-        <div className="stat-card" style={{ borderLeftColor: '#a855f7' }}>
-          <div className="stat-icon">👤</div>
-          <div className="stat-number">210</div>
-          <div className="stat-label">Alunos Cadastrados</div>
-        </div>
+        {stats.map((stat) => (
+          <div key={stat.id} className="stat-card" style={{ borderLeftColor: stat.color }}>
+            <div className="stat-icon">{stat.icon}</div>
+            <div className="stat-number">{isLoading ? '...' : stat.value}</div>
+            <div className="stat-label">{stat.label}</div>
+          </div>
+        ))}
       </section>
+
+      {erroMsg && <p className="home-status-message">{erroMsg}</p>}
 
       <section className="home-featured fade-in">
         <h2>Livros em Destaque</h2>
-        <div className="featured-books-grid">
-          {featuredBooks.map((book) => (
-            <div key={book.id} className="featured-card">
-              <div className="featured-cover">📖</div>
-              <h3>{book.title}</h3>
-              <p className="featured-author">{book.author}</p>
-              <div className="featured-badge-container">
-                <span className={`badge ${book.available ? 'available' : 'unavailable'}`}>
-                  {book.available ? 'Disponível' : 'Indisponível'}
-                </span>
+
+        {isLoading ? (
+          <p className="home-status-message">Carregando acervo...</p>
+        ) : featuredBooks.length > 0 ? (
+          <div className="featured-books-grid">
+            {featuredBooks.map((book) => (
+              <div key={book.id} className="featured-card">
+                <div className="featured-cover">📖</div>
+                <h3>{book.titulo}</h3>
+                <p className="featured-author">{book.autor}</p>
+                <div className="featured-badge-container">
+                  <span className={`badge ${book.disponiveis > 0 ? 'available' : 'unavailable'}`}>
+                    {book.disponiveis > 0
+                      ? `${book.disponiveis} disponível(is)`
+                      : 'Indisponível'}
+                  </span>
+                </div>
+                <Link to={`/livro/${book.id}`} className="btn-details">
+                  Ver Detalhes
+                </Link>
               </div>
-              <Link to="/catalogo" className="btn-details">
-                Ver Detalhes
-              </Link>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          !erroMsg && <p className="home-status-message">Nenhum livro cadastrado no momento.</p>
+        )}
       </section>
 
       <footer className="home-footer fade-in">
