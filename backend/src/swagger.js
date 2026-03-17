@@ -27,7 +27,8 @@ const options = {
           properties: {
             id:    { type: 'string', example: 'uuid' },
             name:  { type: 'string', example: 'João Silva' },
-            email: { type: 'string', example: 'joao@email.com' }
+            email: { type: 'string', example: 'joao@email.com' },
+            role:  { type: 'string', example: 'admin', description: 'admin ou user' }
           }
         },
         Book: {
