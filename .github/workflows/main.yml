@@ -6,13 +6,26 @@ on:
   pull_request:
     branches: [main]
 
+
 jobs:
   test:
     name: Testes automatizados
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: Dgll4GMEYxuSO9nT
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     defaults:
       run:
         working-directory: backend
+    env:
+      DATABASE_URL: "postgresql://postgres:Dgll4GMEYxuSO9nT@localhost:5432/postgres"
+      JWT_KEY: ${{ secrets.JWT_KEY }}
 
     steps:
       - name: Checkout do código
@@ -30,14 +43,12 @@ jobs:
 
       - name: Gerar Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Rodar migrations
+        run: npx prisma migrate deploy
 
       - name: Executar testes
         run: npm test
-        env:
-          JWT_KEY: ${{ secrets.JWT_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   deploy:
     name: Deploy no Render
