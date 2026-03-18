@@ -540,6 +540,20 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.catalogo-capa-fallback {
+  line-height: 1;
+}
+
+.catalogo-capa-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .catalogo-card h3 {
@@ -1354,6 +1368,20 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.livro-detalhe-cover-fallback {
+  line-height: 1;
+}
+
+.livro-detalhe-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .livro-detalhe-content {
@@ -1374,34 +1402,30 @@ body {
   font-size: 1.1rem;
 }
 
-.livro-detalhe-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.livro-detalhe-meta-card {
-  padding: 1rem;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.livro-detalhe-meta-label {
-  color: #94a3b8;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
 .livro-detalhe-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
   margin-top: 0.5rem;
+}
+
+.livro-detalhe-descricao {
+  margin-top: 0.6rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.livro-detalhe-descricao h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.1rem;
+}
+
+.livro-detalhe-descricao p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.6;
 }
 
 .livro-detalhe-link-secondary {
@@ -1417,10 +1441,6 @@ body {
 
   .livro-detalhe-cover {
     min-height: 200px;
-  }
-
-  .livro-detalhe-meta {
-    grid-template-columns: 1fr;
   }
 
   .livro-detalhe-actions {

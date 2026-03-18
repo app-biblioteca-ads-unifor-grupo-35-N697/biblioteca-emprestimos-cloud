@@ -5,6 +5,7 @@ import { getFriendlyError } from '../utils/errorMessages';
 
 function PainelAdmin() {
   const [livros, setLivros] = useState([]);
+  const [bookIdsComEmprestimos, setBookIdsComEmprestimos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionState, setActionState] = useState({ type: null, bookId: null });
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -20,6 +21,7 @@ function PainelAdmin() {
       try {
         setIsLoading(true);
         const data = await apiRequest('/api/books');
+        const emprestimos = await apiRequest('/api/loans');
         const detalhes = await Promise.all(
           data.map(async (livro) => {
             try {
@@ -39,6 +41,12 @@ function PainelAdmin() {
             ? livro.quantiteAvailable
             : 0,
         }));
+
+        const idsComEmprestimos = Array.isArray(emprestimos)
+          ? [...new Set(emprestimos.map((emprestimo) => emprestimo.bookId).filter(Boolean))]
+          : [];
+
+        setBookIdsComEmprestimos(idsComEmprestimos);
         setLivros(livrosMapeados);
       } catch (error) {
         alert(getFriendlyError(error, 'Falha ao carregar livros'));
@@ -154,12 +162,47 @@ function PainelAdmin() {
 
   // Excluir livro
   const handleExcluirLivro = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este livro?')) {
+    const livroParaExcluir = livros.find((livro) => livro.id === id);
+    if (!livroParaExcluir) {
+      alert('Livro não encontrado');
+      return;
+    }
+
+    if (bookIdsComEmprestimos.includes(id)) {
+      alert('Nao e possivel excluir este livro porque existem emprestimos vinculados a ele.');
+      return;
+    }
+
+    if (
+      window.confirm(
+        `Tem certeza que deseja excluir "${livroParaExcluir.titulo}" de ${livroParaExcluir.autor}?`
+      )
+    ) {
       try {
         setActionState({ type: 'deleting', bookId: id });
-        await apiRequest(`/api/books/${id}`, { method: 'DELETE' });
+        console.log(`🗑️ Excluindo livro ID: ${id}`);
+
+        // Evita erro de integridade referencial: livro com emprestimos não pode ser removido.
+        const emprestimos = await apiRequest('/api/loans');
+        const possuiEmprestimosVinculados =
+          Array.isArray(emprestimos) &&
+          emprestimos.some((emprestimo) => emprestimo.bookId === id);
+
+        if (possuiEmprestimosVinculados) {
+          alert(
+            'Nao e possivel excluir este livro porque existem emprestimos vinculados a ele.'
+          );
+          return;
+        }
+        
+        const response = await apiRequest(`/api/books/${id}`, { method: 'DELETE' });
+        console.log('✅ Livro excluído com sucesso:', response);
+        
         setLivros((prev) => prev.filter((livro) => livro.id !== id));
+        setBookIdsComEmprestimos((prev) => prev.filter((bookId) => bookId !== id));
+        alert(`Livro "${livroParaExcluir.titulo}" excluído com sucesso!`);
       } catch (error) {
+        console.error('❌ Erro ao excluir livro:', error);
         alert(getFriendlyError(error, 'Falha ao excluir livro'));
       } finally {
         setActionState({ type: null, bookId: null });
@@ -201,7 +244,7 @@ function PainelAdmin() {
               onClick={() => setMostrarFormulario(!mostrarFormulario)}
               disabled={isActionInProgress}
             >
-              {mostrarFormulario ? 'Cancelar' : '+ Adicionar Livro'}
+              {mostrarFormulario ? 'Cancelar' : '+ Adicionar Manual'}
             </button>
           </div>
 
@@ -295,6 +338,11 @@ function PainelAdmin() {
                     </p>
                   </div>
                   <div className="catalogo-card-actions">
+                    {bookIdsComEmprestimos.includes(livro.id) && (
+                      <p className="painel-livro-alerta" style={{ margin: '0 0 8px', color: '#fbbf24', fontSize: '0.85rem' }}>
+                        Livro com emprestimos vinculados
+                      </p>
+                    )}
                     <button
                       className="btn-details"
                       onClick={() => handleEditarLivro(livro)}
@@ -307,7 +355,12 @@ function PainelAdmin() {
                     <button
                       className="btn-delete"
                       onClick={() => handleExcluirLivro(livro.id)}
-                      disabled={isActionInProgress}
+                      disabled={isActionInProgress || bookIdsComEmprestimos.includes(livro.id)}
+                      title={
+                        bookIdsComEmprestimos.includes(livro.id)
+                          ? 'Nao e possivel excluir: existem emprestimos vinculados a este livro.'
+                          : 'Excluir livro'
+                      }
                     >
                       {actionState.type === 'deleting' && actionState.bookId === livro.id
                         ? 'Excluindo...'

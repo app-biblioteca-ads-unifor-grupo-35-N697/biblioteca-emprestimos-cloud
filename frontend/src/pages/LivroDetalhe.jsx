@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { fetchBookDetails } from '../services/books';
+import { fetchBookDetailsWithGoogle } from '../services/books';
 import { apiRequest } from '../services/api';
 import { getFriendlyError } from '../utils/errorMessages';
 
@@ -18,7 +18,7 @@ function LivroDetalhe() {
       try {
         setIsLoading(true);
         setErroMsg('');
-        const book = await fetchBookDetails(id);
+        const book = await fetchBookDetailsWithGoogle(id);
         setLivro(book);
       } catch (error) {
         setErroMsg(getFriendlyError(error, 'Falha ao carregar os detalhes do livro.'));
@@ -86,7 +86,22 @@ function LivroDetalhe() {
             </div>
           ) : (
             <div className="livro-detalhe-card">
-              <div className="livro-detalhe-cover">📘</div>
+              <div className="livro-detalhe-cover">
+                <span className="livro-detalhe-cover-fallback" aria-hidden="true">
+                  📘
+                </span>
+                {livro.urlCapa && (
+                  <img
+                    src={livro.urlCapa}
+                    alt={`Capa do livro ${livro.titulo}`}
+                    className="livro-detalhe-cover-img"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+              </div>
 
               <div className="livro-detalhe-content">
                 <span
@@ -98,16 +113,19 @@ function LivroDetalhe() {
                 <h1>{livro.titulo}</h1>
                 <p className="livro-detalhe-author">{livro.autor}</p>
 
-                <div className="livro-detalhe-meta">
-                  <div className="livro-detalhe-meta-card">
-                    <span className="livro-detalhe-meta-label">Categoria</span>
-                    <strong>{livro.genero}</strong>
+                {livro.sinopse && (
+                  <div className="livro-detalhe-descricao">
+                    <h2>Sinopse</h2>
+                    <p>{livro.sinopse}</p>
                   </div>
-                  <div className="livro-detalhe-meta-card">
-                    <span className="livro-detalhe-meta-label">Exemplares disponíveis</span>
-                    <strong>{livro.disponiveis}</strong>
+                )}
+
+                {!livro.sinopse && (
+                  <div className="livro-detalhe-descricao">
+                    <h2>Sinopse</h2>
+                    <p>Sinopse não disponível na Google Books para este título.</p>
                   </div>
-                </div>
+                )}
 
                 <div className="livro-detalhe-actions">
                   <button

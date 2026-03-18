@@ -6,6 +6,7 @@ import LivroDetalhe from './pages/LivroDetalhe';
 import Reservas from './pages/Reservas';
 import LoginCadastro from './pages/LoginCadastro';
 import PainelAdmin from './pages/PainelAdmin';
+import CadastroLivro from './pages/CadastroLivro';
 import { apiRequest } from './services/api';
 import { clearStoredSession, getStoredToken, getStoredUser } from './utils/auth';
 import './App.css';
@@ -102,6 +103,14 @@ function App() {
           element={
             <AdminRoute>
               <PainelAdmin />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/cadastro-livro"
+          element={
+            <AdminRoute>
+              <CadastroLivro />
             </AdminRoute>
           }
         />

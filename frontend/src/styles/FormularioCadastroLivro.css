@@ -1,0 +1,248 @@
+/**
+ * Estilos do componente FormularioCadastroLivro
+ */
+
+.formulario-cadastro-livro {
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.formulario-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.formulario-container h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+/* ===== MENSAGENS ===== */
+.mensagem {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mensagem-sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.mensagem-erro {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.mensagem-aviso {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+/* ===== CAMPOS DO FORMULÁRIO ===== */
+.campo-grupo {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.campo-grupo label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.obrigatorio {
+  color: #e74c3c;
+  margin-left: 0.25rem;
+}
+
+.campo-grupo input,
+.campo-grupo textarea {
+  padding: 0.75rem;
+  border: 2px solid #ecf0f1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+}
+
+.campo-grupo input:focus,
+.campo-grupo textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.campo-grupo input:disabled,
+.campo-grupo textarea:disabled {
+  background-color: #ecf0f1;
+  color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.campo-grupo textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* ===== GRUPO ENTRADA + BOTÃO ===== */
+.grupo-entrada-botao {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.grupo-entrada-botao input {
+  flex: 1;
+}
+
+.botao-buscar {
+  padding: 0.75rem 1.25rem;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.botao-buscar:hover:not(:disabled) {
+  background-color: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.botao-buscar:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ===== PRÉVIA DA CAPA ===== */
+.preview-capa {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #ecf0f1;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.preview-capa img {
+  max-width: 100%;
+  max-height: 250px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== GRUPO DE BOTÕES ===== */
+.grupo-botoes {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+.botao {
+  padding: 0.875rem 1.75rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  max-width: 200px;
+}
+
+.botao-salvar {
+  background-color: #3498db;
+  color: white;
+}
+
+.botao-salvar:hover:not(:disabled) {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.botao-limpar {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.botao-limpar:hover:not(:disabled) {
+  background-color: #7f8c8d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 600px) {
+  .formulario-cadastro-livro {
+    padding: 1rem;
+  }
+
+  .formulario-container {
+    padding: 1.5rem;
+  }
+
+  .formulario-container h2 {
+    font-size: 1.4rem;
+  }
+
+  .grupo-botoes {
+    flex-direction: column;
+  }
+
+  .botao {
+    max-width: 100%;
+  }
+
+  .grupo-entrada-botao {
+    flex-direction: column;
+  }
+
+  .botao-buscar {
+    width: 100%;
+  }
+}

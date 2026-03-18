@@ -144,3 +144,11 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+
+User_rows.json
+padroes-projeto.md
+.GUIA_TESTES_MANUAIS.md
+.instrucoes-dev.md
+.SALVAMENTO_LIVROS.md
+.CORRECAO_429.md
