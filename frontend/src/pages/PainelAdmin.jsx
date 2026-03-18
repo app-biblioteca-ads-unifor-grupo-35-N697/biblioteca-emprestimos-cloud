@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { apiRequest } from '../services/api';
 import { getFriendlyError } from '../utils/errorMessages';
+import { enrichBookWithGoogleData, mapBookFromApi } from '../services/books';
 
 function PainelAdmin() {
   const [livros, setLivros] = useState([]);
@@ -40,14 +41,26 @@ function PainelAdmin() {
           disponiveis: Number.isFinite(livro.quantiteAvailable)
             ? livro.quantiteAvailable
             : 0,
+          urlCapa: '',
         }));
+
+        // Enriquecer livros com dados do Google Books (incluindo capa)
+        const livrosEnriquecidos = await Promise.all(
+          livrosMapeados.map(async (livro) => {
+            try {
+              return await enrichBookWithGoogleData(livro);
+            } catch (error) {
+              return livro;
+            }
+          })
+        );
 
         const idsComEmprestimos = Array.isArray(emprestimos)
           ? [...new Set(emprestimos.map((emprestimo) => emprestimo.bookId).filter(Boolean))]
           : [];
 
         setBookIdsComEmprestimos(idsComEmprestimos);
-        setLivros(livrosMapeados);
+        setLivros(livrosEnriquecidos);
       } catch (error) {
         alert(getFriendlyError(error, 'Falha ao carregar livros'));
       } finally {
@@ -324,7 +337,22 @@ function PainelAdmin() {
             <div className="painel-livros-grid fade-in">
               {livrosFiltrados.map((livro) => (
                 <div key={livro.id} className="painel-livro-card">
-                  <div className="painel-livro-capa">📖</div>
+                  <div className="painel-livro-capa">
+                    <span className="painel-livro-capa-fallback" aria-hidden="true">
+                      📖
+                    </span>
+                    {livro.urlCapa && (
+                      <img
+                        src={livro.urlCapa}
+                        alt={`Capa do livro ${livro.titulo}`}
+                        className="painel-livro-capa-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                  </div>
                   <div className="painel-livro-info">
                     <h3>{livro.titulo}</h3>
                     <p className="painel-livro-autor">{livro.autor}</p>

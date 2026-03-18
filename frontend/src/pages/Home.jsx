@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { apiRequest } from '../services/api';
-import { fetchBooksWithDetails } from '../services/books';
+import { fetchBooksWithGoogleDetails } from '../services/books';
 import { getFriendlyError } from '../utils/errorMessages';
 
 const STAT_INICIAL = [
@@ -22,7 +22,7 @@ function Home() {
     async function carregarDashboard() {
       try {
         const [books, loans] = await Promise.all([
-          fetchBooksWithDetails(),
+          fetchBooksWithGoogleDetails(),
           apiRequest('/api/loans'),
         ]);
 
@@ -113,7 +113,22 @@ function Home() {
           <div className="featured-books-grid">
             {featuredBooks.map((book) => (
               <div key={book.id} className="featured-card">
-                <div className="featured-cover">📖</div>
+                <div className="featured-cover">
+                  <span className="featured-cover-fallback" aria-hidden="true">
+                    📖
+                  </span>
+                  {book.urlCapa && (
+                    <img
+                      src={book.urlCapa}
+                      alt={`Capa do livro ${book.titulo}`}
+                      className="featured-cover-img"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+                </div>
                 <h3>{book.titulo}</h3>
                 <p className="featured-author">{book.autor}</p>
                 <div className="featured-badge-container">

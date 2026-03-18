@@ -344,13 +344,27 @@ body {
 }
 
 .featured-cover {
-  height: 180px;
+  height: 200px;
   border-radius: 8px;
   background: linear-gradient(135deg, #1e3a5f, #3b82f6);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
+  font-size: 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.featured-cover-fallback {
+  line-height: 1;
+}
+
+.featured-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .featured-card h3 {
@@ -1211,6 +1225,20 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.painel-livro-capa-fallback {
+  line-height: 1;
+}
+
+.painel-livro-capa-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .painel-livro-info {

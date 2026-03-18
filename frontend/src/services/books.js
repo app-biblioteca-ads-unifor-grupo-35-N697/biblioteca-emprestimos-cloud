@@ -13,7 +13,7 @@ export function mapBookFromApi(book) {
   };
 }
 
-async function enrichBookWithGoogleData(book) {
+export async function enrichBookWithGoogleData(book) {
   try {
     const metadata = await fetchBookMetadataByTitleAuthor(book.titulo, book.autor);
     if (!metadata) {
