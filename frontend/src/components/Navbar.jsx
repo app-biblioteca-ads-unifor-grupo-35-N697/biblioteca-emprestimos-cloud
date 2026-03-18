@@ -44,9 +44,14 @@ function Navbar() {
 
           {/* Reservas ou Painel Admin - apenas com token */}
           {token && usuario?.tipo === 'admin' && (
-            <Link to="/admin" className="navbar-link" onClick={() => setMenuOpen(false)}>
-              Painel Admin
-            </Link>
+            <>
+              <Link to="/admin" className="navbar-link" onClick={() => setMenuOpen(false)}>
+                Painel Admin
+              </Link>
+              <Link to="/admin/cadastro-livro" className="navbar-link" onClick={() => setMenuOpen(false)}>
+                Cadastrar Livro
+              </Link>
+            </>
           )}
 
           {token && usuario?.tipo === 'aluno' && (

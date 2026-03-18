@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { apiRequest } from '../services/api';
+import { fetchBooksWithGoogleDetails } from '../services/books';
 import { getFriendlyError } from '../utils/errorMessages';
 
 function Catalogo() {
@@ -15,26 +16,7 @@ function Catalogo() {
     async function carregarLivros() {
       try {
         setIsLoading(true);
-        const data = await apiRequest('/api/books');
-        const detalhes = await Promise.all(
-          data.map(async (livro) => {
-            try {
-              return await apiRequest(`/api/books/${livro.id}`);
-            } catch (error) {
-              return livro;
-            }
-          })
-        );
-
-        const livrosMapeados = detalhes.map((livro) => ({
-          id: livro.id,
-          titulo: livro.title || 'Sem titulo',
-          autor: livro.author || 'Autor não informado',
-          genero: 'N/A',
-          disponiveis: Number.isFinite(livro.quantiteAvailable)
-            ? livro.quantiteAvailable
-            : 0,
-        }));
+        const livrosMapeados = await fetchBooksWithGoogleDetails();
         setLivros(livrosMapeados);
       } catch (error) {
         alert(getFriendlyError(error, 'Falha ao carregar livros'));
@@ -147,7 +129,22 @@ function Catalogo() {
             <div className="catalogo-grid fade-in">
               {livrosFiltrados.map((livro) => (
                 <div key={livro.id} className="catalogo-card">
-                  <div className="catalogo-capa">📖</div>
+                  <div className="catalogo-capa">
+                    <span className="catalogo-capa-fallback" aria-hidden="true">
+                      📖
+                    </span>
+                    {livro.urlCapa && (
+                      <img
+                        src={livro.urlCapa}
+                        alt={`Capa do livro ${livro.titulo}`}
+                        className="catalogo-capa-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                  </div>
                   <h3>{livro.titulo}</h3>
                   <p className="catalogo-autor">{livro.autor}</p>
                   <p className="catalogo-genero">{livro.genero}</p>
