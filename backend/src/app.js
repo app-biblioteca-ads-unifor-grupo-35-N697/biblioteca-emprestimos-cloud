@@ -16,9 +16,21 @@ const corsOptions = {
     "https://biblioteca-emprestimos-cloud.vercel.app", // Vercel production
   ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
+
+// Debug CORS (remover em produção)
+app.use((req, res, next) => {
+  if (process.env.DEBUG_CORS === 'true') {
+    console.log(`[CORS DEBUG] ${req.method} ${req.path} - Origin: ${req.get('origin')}`);
+  }
+  next();
+});
 app.use(morgan('dev'));
 app.use(express.json());
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
