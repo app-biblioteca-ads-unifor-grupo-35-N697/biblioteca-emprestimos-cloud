@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://seu-backend-url.com/api/:path*"
+      "destination": "https://biblioteca-emprestimos-cloud.onrender.com/api/:path*"
     }
   ],
   "headers": [

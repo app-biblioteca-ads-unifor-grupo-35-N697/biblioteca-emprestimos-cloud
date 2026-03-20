@@ -80,7 +80,7 @@ npm install
 #### Variáveis de ambiente do frontend
 Crie um `.env.local` com:
 ```env
-VITE_API_URL=https://biblioteca-emprestimos-cloud.onrender.com
+REACT_APP_API_URL=https://biblioteca-emprestimos-cloud.onrender.com
 ```
 
 ### 4) Rodar localmente
