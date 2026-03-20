@@ -7,7 +7,18 @@ const errorMiddleware = require("./middlewares/error-middleware");
 const { swaggerUi, swaggerSpec } = require("./swagger");
 
 const app = express();
-app.use(cors());
+
+// Configuração de CORS para aceitar requisições do frontend
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",      // Desenvolvimento local
+    "http://localhost:5173",      // Vite dev (se usado)
+    "https://biblioteca-emprestimos-cloud.vercel.app", // Vercel production
+  ],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
