@@ -270,7 +270,10 @@ Não precisa de body.
 
 - Use o Swagger para testar endpoints e visualizar exemplos de payload/resposta.
 - Sempre obtenha o token JWT no login e envie no header Authorization.
-- Trate erros de autenticação e permissão no frontend.
-- **⚠️ FORMATO DE ERROS (ATUALIZADO):** Graças ao novo Error Handler global do backend, todos os erros devolvidos pela API enviarão a mensagem dentro da propriedade `"error"` e não mais `"message"`. (Exemplo: `err.response.data.error`). Certifique-se de ajustar isso no Axios.
+- Trate erros de autenticação e permissão no frontend:
+  - **401 (Não autenticado):** O frontend automaticamente limpa a sessão e redireciona para `/login` quando detecta sessão expirada.
+  - **403 (Sem permissão):** Exiba um alerta informando que o usuário não tem permissão para executar a ação.
+  - **409 (Conflict):** Exiba um alerta amigável explicando por que a ação não é permitida (ex: recurso em uso).
+- **⚠️ FORMATO DE ERROS (ATUALIZADO):** Graças ao novo Error Handler global do backend, todos os erros devolvidos pela API enviarão a mensagem dentro da propriedade `"error"` e não mais `"message"`. (Exemplo: `err.response.data.error`). O frontend está configurado para lidar com esse padrão automaticamente.
 - Consulte o guia de padrões do projeto para entender fluxos e regras de negócio.
 - Em caso de dúvida, consulte os links importantes ou peça ajuda ao time.
