@@ -91,8 +91,6 @@ apiRouter.get("/books", booksController.index);
  */
 apiRouter.post("/books", ensureAuth, booksController.save);
 
-apiRouter.post("/books/search/author", booksController.searchByRequestBody);
-
 /**
  * @swagger
  * /api/books/{id}:
