@@ -1,5 +1,6 @@
 const usersModel = require('../models/users-model');
 const HttpError = require('../errors/HttpError');
+const prisma = require('../database/prisma'); // Importamos o prisma para fazer a consulta
 
 module.exports = {
   // Listar todos os usuários (apenas admin)
@@ -63,6 +64,13 @@ module.exports = {
           throw new HttpError(403, 'Não é permitido remover o último admin.');
         }
       }
+
+      // VERIFICAÇÃO: Não permitir exclusão se o usuário tiver empréstimos associados
+      const loanExists = await prisma.loan.findFirst({ where: { userId: id } });
+      if (loanExists) {
+        throw new HttpError(409, 'Não é possível remover o usuário, pois ele possui empréstimos associados.');
+      }
+
       await usersModel.deleteUser(id);
       res.status(204).send();
     } catch (error) {
