@@ -28,7 +28,11 @@ export async function apiRequest(path, options = {}) {
     const message = isObjectData
       ? data.error || data.message || "Erro ao processar a requisicao"
       : "Erro ao processar a requisicao";
-    throw new Error(message);
+    
+    const error = new Error(message);
+    error.status = response.status;
+    error.response = { status: response.status, data };
+    throw error;
   }
 
   return data;

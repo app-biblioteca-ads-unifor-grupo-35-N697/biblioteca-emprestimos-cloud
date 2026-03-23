@@ -216,7 +216,13 @@ function PainelAdmin() {
         alert(`Livro "${livroParaExcluir.titulo}" excluído com sucesso!`);
       } catch (error) {
         console.error('❌ Erro ao excluir livro:', error);
-        alert(getFriendlyError(error, 'Falha ao excluir livro'));
+        
+        // Verificar especificamente erro 409 (Conflito)
+        if (error.status === 409) {
+          alert('❌ Não é possível excluir este livro pois ele possui um histórico de empréstimo ativo/finalizado.');
+        } else {
+          alert(getFriendlyError(error, 'Falha ao excluir livro'));
+        }
       } finally {
         setActionState({ type: null, bookId: null });
       }
