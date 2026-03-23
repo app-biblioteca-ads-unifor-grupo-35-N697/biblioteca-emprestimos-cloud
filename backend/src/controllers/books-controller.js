@@ -1,6 +1,6 @@
 const booksModel = require("../models/books-model");
-const loansModel = require("../models/loans-model");
 const HttpError = require("../errors/HttpError");
+const prisma = require("../database/prisma");
 
 module.exports = {
   // GET /api/books  busca todos os livros
@@ -79,8 +79,8 @@ module.exports = {
     try {
       const { id } = req.params;
       // VERIFICAÇÃO: Não permitir exclusão se houver empréstimos associados
-      const loansForBook = await loansModel.find({ where: { bookId: id } });
-      if (loansForBook && loansForBook.length > 0) {
+      const loanExists = await prisma.loan.findFirst({ where: { bookId: id } });
+      if (loanExists) {
         throw new HttpError(409, "Não é possível remover o livro, pois ele possui empréstimos associados.");
       }
       const deletedBook = await booksModel.deleteBook(id);
