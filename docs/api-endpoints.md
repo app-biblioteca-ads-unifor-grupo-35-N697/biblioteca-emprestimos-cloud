@@ -237,6 +237,8 @@ Não precisa de body.
 | PUT | `/api/users/:id` | Atualiza usuário | ✅ (admin) |
 | DELETE | `/api/users/:id` | Remove usuário | ✅ (admin) |
 
+> **Atenção nas exclusões (DELETE):** As rotas de remover Livro e remover Usuário retornarão o Status **409 Conflict** caso o registro possua empréstimos associados. O Front-end deve tratar esse status e exibir um alerta amigável, pois a API não permite a exclusão para manter a integridade do banco.
+
 ---
 
 ## Exemplos de erros comuns
@@ -269,5 +271,6 @@ Não precisa de body.
 - Use o Swagger para testar endpoints e visualizar exemplos de payload/resposta.
 - Sempre obtenha o token JWT no login e envie no header Authorization.
 - Trate erros de autenticação e permissão no frontend.
+- **⚠️ FORMATO DE ERROS (ATUALIZADO):** Graças ao novo Error Handler global do backend, todos os erros devolvidos pela API enviarão a mensagem dentro da propriedade `"error"` e não mais `"message"`. (Exemplo: `err.response.data.error`). Certifique-se de ajustar isso no Axios.
 - Consulte o guia de padrões do projeto para entender fluxos e regras de negócio.
 - Em caso de dúvida, consulte os links importantes ou peça ajuda ao time.
