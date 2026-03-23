@@ -37,6 +37,9 @@ O foco do trabalho foi exclusivamente na correção estrutural e blindagem da AP
 * **Correções Finais (Estabilização e Testes):**
   * Ajuste na propriedade de leitura de status no `error-handler.js` (de `err.statusCode` para `err.status`), garantindo que o backend retorne os códigos HTTP exatos (400, 401, 403) em vez de Erros 500 genéricos.
   * Limpeza no arquivo de rotas (`api.js`), removendo uma rota órfã (`POST /api/books/search/author`) que impedia o servidor de iniciar corretamente.
+  * Correção da consulta de validação de exclusão no `books-controller.js`, utilizando `prisma.loan.findFirst` para evitar um Erro 500 ao tentar deletar livros.
+  * Configuração do comando de inicialização no `package.json` (`prisma db seed`) para facilitar a popularização do banco de dados na nuvem.
+  * Refatoração de segurança no `seed-admin.js`, removendo a senha fixa (hardcoded) do código e adotando o uso da variável de ambiente `ADMIN_PASSWORD`.
 
 ---
 
