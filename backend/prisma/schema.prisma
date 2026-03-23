@@ -33,5 +33,5 @@ model Loan {
   isReturned Boolean   @default(false)
   isLate     Boolean   @default(false)
   user       User      @relation(fields: [userId], references: [id])
-  book       Book      @relation(fields: [bookId], references: [id])
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Restrict)
 }
