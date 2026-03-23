@@ -3,6 +3,7 @@ const express = require('express');
 const authController = require('./auth-controller');
 const usersModel = require('../models/users-model');
 const jwt = require('jsonwebtoken');
+const errorHandler = require('../middlewares/error-handler');
 
 jest.mock('../models/users-model');
 jest.mock('jsonwebtoken');
@@ -16,6 +17,7 @@ const app = express();
 app.use(express.json());
 app.post('/auth/register', authController.register);
 app.post('/auth/login', authController.login);
+app.use(errorHandler);
 
 describe('Auth Controller - Register', () => {
   beforeEach(() => {
@@ -28,7 +30,7 @@ describe('Auth Controller - Register', () => {
       .send({ name: 'Test User', email: 'test@example.com' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Todos os campos são obrigatórios');
+    expect(response.body.error).toBe('Todos os campos são obrigatórios');
   });
 
   it('deve retornar 400 se a senha tiver menos de 6 caracteres', async () => {
@@ -37,7 +39,7 @@ describe('Auth Controller - Register', () => {
       .send({ name: 'Test User', email: 'test@example.com', password: '123' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('A senha deve ter pelo menos 6 caracteres.');
+    expect(response.body.error).toBe('A senha deve ter pelo menos 6 caracteres.');
   });
 
   it('deve retornar 400 se o email já estiver cadastrado', async () => {
@@ -48,7 +50,7 @@ describe('Auth Controller - Register', () => {
       .send({ name: 'Test User', email: 'test@example.com', password: '123456' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('E-mail já cadastrado!');
+    expect(response.body.error).toBe('E-mail já cadastrado!');
   });
 
   it('deve retornar 400 se o email for inválido', async () => {
@@ -57,7 +59,7 @@ describe('Auth Controller - Register', () => {
       .send({ name: 'Test User', email: 'invalid-email', password: '123456' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Email inválido.');
+    expect(response.body.error).toBe('Email inválido.');
   });
 
   it('deve retornar 201 e criar um novo usuário se os dados forem válidos', async () => {
@@ -90,7 +92,7 @@ describe('Auth Controller - Login', () => {
       .send({ email: 'test@example.com' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Todos os campos são obrigatórios');
+    expect(response.body.error).toBe('Todos os campos são obrigatórios');
   });
 
   it('deve retornar 400 se o email for inválido', async () => {
@@ -99,7 +101,7 @@ describe('Auth Controller - Login', () => {
       .send({ email: 'invalid-email', password: '123456' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Email inválido.');
+    expect(response.body.error).toBe('Email inválido.');
   });
 
   it('deve retornar 401 se o usuário não existir', async () => {
@@ -110,7 +112,7 @@ describe('Auth Controller - Login', () => {
       .send({ email: 'test@example.com', password: '123456' });
 
     expect(response.status).toBe(401);
-    expect(response.body.message).toBe('E-mail ou senha incorretos!');
+    expect(response.body.error).toBe('E-mail ou senha incorretos!');
   });
 
   it('deve retornar 401 se a senha estiver incorreta', async () => {
@@ -126,7 +128,7 @@ describe('Auth Controller - Login', () => {
       .send({ email: 'test@example.com', password: '123456' });
 
     expect(response.status).toBe(401);
-    expect(response.body.message).toBe('E-mail ou senha incorretos!');
+    expect(response.body.error).toBe('E-mail ou senha incorretos!');
   });
 
   it('deve retornar 200 e um token se os dados forem válidos', async () => {
