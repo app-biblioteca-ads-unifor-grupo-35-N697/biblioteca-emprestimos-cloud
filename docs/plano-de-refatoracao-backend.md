@@ -40,6 +40,7 @@ O foco do trabalho foi exclusivamente na correção estrutural e blindagem da AP
   * Correção da consulta de validação de exclusão no `books-controller.js`, utilizando `prisma.loan.findFirst` para evitar um Erro 500 ao tentar deletar livros.
   * Configuração do comando de inicialização no `package.json` (`prisma db seed`) para facilitar a popularização do banco de dados na nuvem.
   * Refatoração de segurança no `seed-admin.js`, removendo a senha fixa (hardcoded) do código e adotando o uso da variável de ambiente `ADMIN_PASSWORD`.
+  * Correção na exclusão de usuários no `users-controller.js`, implementando a mesma validação (`findFirst` em empréstimos) para evitar Erro 500 e retornar um Status 409.
 
 ---
 
@@ -51,6 +52,10 @@ As alterações de robustez no backend exigem pequenos ajustes na forma como o F
   Devido ao novo *Error Handler Global*, o backend agora não retorna mais propriedades `"message"`. **Toda mensagem de falha viaja estritamente dentro da propriedade `"error"`**.  
   **Ação necessária:** Em componentes que capturam erros (formulários de login, registro, etc.), alterar a leitura de `err.response.data.message` para `err.response.data.error`.
 
-* **Tratar o Novo Erro de Exclusão (409 Conflict):**
+* **Tratar o Novo Erro de Exclusão de Livros (409 Conflict):**
   Ao tentar excluir um livro que tenha um empréstimo associado, a resposta agora é um Status HTTP 409.  
   **Ação necessária:** Na tela de Painel Admin de livros, verificar se `err.response.status === 409` e exibir um alerta amigável (ex: "Não é possível excluir este livro pois ele possui um histórico de empréstimo ativo/finalizado").
+
+* **Tratar o Novo Erro de Exclusão de Usuários (409 Conflict):**
+  Ao tentar excluir um usuário que tenha um empréstimo associado, a API também retornará um Status HTTP 409, protegendo a integridade do banco.  
+  **Ação necessária:** Na tela de gerenciamento de usuários (Painel Admin), verificar se `err.response.status === 409` e exibir um alerta amigável informando que a exclusão não é permitida.

@@ -5,6 +5,8 @@ describe('Seed Admin Inicial', () => {
   const adminEmail = 'admin@biblioteca.com';
 
   beforeAll(async () => {
+    // Limpa os empréstimos primeiro para não dar erro de constraint ao apagar os usuários
+    await prisma.loan.deleteMany();
     // Remove todos os admins para simular ambiente sem admin
     await prisma.user.deleteMany({ where: { role: 'admin' } });
     // Também remove qualquer admin-teste@biblioteca.com que possa existir
@@ -12,6 +14,8 @@ describe('Seed Admin Inicial', () => {
   });
 
   afterAll(async () => {
+    // Limpa os empréstimos primeiro
+    await prisma.loan.deleteMany();
     // Limpa o admin criado pelo seed para não afetar outros testes
     await prisma.user.deleteMany({ where: { email: adminEmail } });
     await prisma.$disconnect();
