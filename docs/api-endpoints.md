@@ -174,6 +174,7 @@ Não precisa de token.
 
 ### DELETE `/api/books/:id` — Remover livro (apenas admin)
 **Resposta (200):** objeto do livro removido.
+**Erro (409):** `{"error": "Não é possível remover o livro, pois ele possui empréstimos associados."}`
 
 ---
 
