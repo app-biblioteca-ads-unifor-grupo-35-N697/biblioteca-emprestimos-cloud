@@ -59,3 +59,27 @@ As alterações de robustez no backend exigem pequenos ajustes na forma como o F
 * **Tratar o Novo Erro de Exclusão de Usuários (409 Conflict):**
   Ao tentar excluir um usuário que tenha um empréstimo associado, a API também retornará um Status HTTP 409, protegendo a integridade do banco.  
   **Ação necessária:** Na tela de gerenciamento de usuários (Painel Admin), verificar se `err.response.status === 409` e exibir um alerta amigável informando que a exclusão não é permitida.
+
+  * **Tratar o Novo Erro de Exclusão de Usuários (409 Conflict):**
+  Ao tentar excluir um usuário que tenha um empréstimo associado, a API também retornará um Status HTTP 409, protegendo a integridade do banco.  
+  **Ação necessária:** Na tela de gerenciamento de usuários (Painel Admin), verificar se `err.response.status === 409` e exibir um alerta amigável informando que a exclusão não é permitida.
+
+---
+
+## 4. Guia de Testes e Cuidados com o Banco de Dados
+
+Ao rodar os testes automatizados do backend localmente, a equipe precisa estar atenta ao comportamento de limpeza do banco de dados:
+
+* **Como rodar os testes:** Na pasta `backend`, execute o comando `npm test`.
+* **⚠️ Efeito Colateral (Atenção):** Os nossos testes (`users-controller.test.js` e `seed-admin.test.js`) utilizam métodos de faxina (`beforeAll` e `afterAll` com `deleteMany`) para garantir que os testes rodem em um ambiente limpo. Se o seu arquivo `.env` estiver apontando para a URL de produção/desenvolvimento do **Supabase**, rodar os testes **apagará dados reais, incluindo o usuário Admin**.
+* **O que fazer após os testes:** Caso você rode os testes apontados para o Supabase, você precisará repopular o administrador imediatamente após o fim do teste para não perder acesso ao sistema. Basta rodar:
+  ```bash
+  npx prisma db seed
+  ```
+
+### 🚀 Melhorias Futuras (Boas Práticas)
+
+Para evitar esse risco no futuro, as seguintes melhorias técnicas devem ser priorizadas nas próximas *Sprints*:
+* **Isolamento de Banco de Dados:** Nunca usar a mesma URL de banco (`DATABASE_URL`) para produção e testes.
+* **Banco Local (Docker):** Criar um script ou um `docker-compose.yml` para levantar um banco PostgreSQL temporário localmente exclusivo para o `npm test` (semelhante ao que já fazemos no pipeline do GitHub Actions).
+* **Arquivo `.env.test`:** Configurar o Jest para ler variáveis de um ambiente de testes, abortando a execução caso detecte a URL do Supabase.
