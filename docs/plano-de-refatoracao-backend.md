@@ -34,6 +34,10 @@ O foco do trabalho foi exclusivamente na correção estrutural e blindagem da AP
 * **Resolvido Conflito de Versão do Prisma:**
   * Limpeza do cache do ambiente local e downgrade seguro do Prisma para a versão 6.19.2, corrigindo as falhas de compilação do `schema.prisma` geradas pela atualização acidental para a v7.
 
+* **Correções Finais (Estabilização e Testes):**
+  * Ajuste na propriedade de leitura de status no `error-handler.js` (de `err.statusCode` para `err.status`), garantindo que o backend retorne os códigos HTTP exatos (400, 401, 403) em vez de Erros 500 genéricos.
+  * Limpeza no arquivo de rotas (`api.js`), removendo uma rota órfã (`POST /api/books/search/author`) que impedia o servidor de iniciar corretamente.
+
 ---
 
 ## 3. Guia de Adequação para o Front-end
