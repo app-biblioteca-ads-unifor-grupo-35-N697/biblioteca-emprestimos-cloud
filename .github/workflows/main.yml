@@ -57,6 +57,7 @@ jobs:
         working-directory: backend
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/biblioteca_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/biblioteca_test
           JWT_KEY: ${{ secrets.JWT_KEY }}
 
   deploy-render:
