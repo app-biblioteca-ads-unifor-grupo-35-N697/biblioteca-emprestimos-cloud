@@ -1,8 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
 import FormularioCadastroLivro from './FormularioCadastroLivro';
 import * as googleBooksService from '../services/googleBooks';
+import * as apiService from '../services/api';
 
 /**
  * Testes do componente FormularioCadastroLivro
@@ -10,10 +12,13 @@ import * as googleBooksService from '../services/googleBooks';
  */
 
 jest.mock('../services/googleBooks');
+jest.mock('../services/api');
 
 describe('FormularioCadastroLivro - Componente', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock padrão para apiRequest
+    apiService.apiRequest.mockResolvedValue({ id: 'novo-livro-id' });
   });
 
   /**
@@ -521,12 +526,8 @@ describe('FormularioCadastroLivro - Componente', () => {
 
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith(
-          '📚 Livro para salvar:',
-          expect.objectContaining({
-            isbn: '9780134685991',
-            titulo: 'Clean Code',
-            autor: 'Robert C. Martin',
-          })
+          expect.stringContaining('Livro salvo no backend com sucesso'),
+          expect.any(Object)
         );
       });
 
