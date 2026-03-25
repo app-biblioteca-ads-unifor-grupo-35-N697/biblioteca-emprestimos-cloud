@@ -105,7 +105,7 @@ function Home() {
         <h2>Livros em Destaque</h2>
 
         {isLoading ? (
-          <p className="home-status-message">⏳ Carregando acervo com cache inteligente...</p>
+          <p className="home-status-message">⏳ Carregando acervo...</p>
         ) : featuredBooks.length > 0 ? (
           <div className="featured-books-grid">
             {featuredBooks.map((book) => (
