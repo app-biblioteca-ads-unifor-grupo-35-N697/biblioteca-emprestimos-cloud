@@ -45,12 +45,14 @@ jobs:
         working-directory: backend
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/biblioteca_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/biblioteca_test
 
       - name: Rodar Migrations
         run: npx prisma migrate deploy
         working-directory: backend
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/biblioteca_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/biblioteca_test
 
       - name: Executar testes
         run: npm test
