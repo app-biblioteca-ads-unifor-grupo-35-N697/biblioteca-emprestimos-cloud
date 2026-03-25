@@ -12,11 +12,10 @@ import { fetchBookMetadataByTitleAuthor } from './googleBooks';
  */
 export function useBooksWithGoogle() {
   return useQuery({
-    queryKey: ['books', 'google'],
+    queryKey: ['books'],
     queryFn: async () => {
       const books = await fetchBooksWithDetails();
-      // Enriquece em paralelo (limite de 5)
-      return enrichBooksInParallel(books, 5);
+      return books;
     },
     staleTime: 3 * 60 * 1000, // 3 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
@@ -28,20 +27,19 @@ export function useBooksWithGoogle() {
  */
 export function useBooksWithGooglePaginated(page = 1, pageSize = 12) {
   return useQuery({
-    queryKey: ['books', 'google', 'paginated', page, pageSize],
+    queryKey: ['books', 'paginated', page, pageSize],
     queryFn: async () => {
       const books = await fetchBooksWithDetails();
-      const enriched = await enrichBooksInParallel(books, 5);
       
       const startIdx = (page - 1) * pageSize;
       const endIdx = startIdx + pageSize;
       
       return {
-        data: enriched.slice(startIdx, endIdx),
-        total: enriched.length,
+        data: books.slice(startIdx, endIdx),
+        total: books.length,
         page,
         pageSize,
-        hasMore: endIdx < enriched.length,
+        hasMore: endIdx < books.length,
       };
     },
     staleTime: 3 * 60 * 1000,
@@ -54,14 +52,12 @@ export function useBooksWithGooglePaginated(page = 1, pageSize = 12) {
  */
 export function useBookWithGoogle(bookId) {
   return useQuery({
-    queryKey: ['book', bookId, 'google'],
+    queryKey: ['book', bookId],
     queryFn: async () => {
       const book = await fetchBookDetails(bookId);
-      const metadata = await fetchBookMetadataByTitleAuthor(book.titulo, book.autor);
       return {
         ...book,
-        ...metadata,
-        genero: metadata?.categorias || book.genero,
+        genero: book.genero || 'N/A',
       };
     },
     enabled: !!bookId,
