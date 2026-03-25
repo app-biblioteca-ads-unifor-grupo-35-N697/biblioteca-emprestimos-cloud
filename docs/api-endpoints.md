@@ -174,6 +174,7 @@ Não precisa de token.
 
 ### DELETE `/api/books/:id` — Remover livro (apenas admin)
 **Resposta (200):** objeto do livro removido.
+**Erro (409):** `{"error": "Não é possível remover o livro, pois ele possui empréstimos associados."}`
 
 ---
 
@@ -236,6 +237,8 @@ Não precisa de body.
 | PUT | `/api/users/:id` | Atualiza usuário | ✅ (admin) |
 | DELETE | `/api/users/:id` | Remove usuário | ✅ (admin) |
 
+> **Atenção nas exclusões (DELETE):** As rotas de remover Livro e remover Usuário retornarão o Status **409 Conflict** caso o registro possua empréstimos associados. O Front-end deve tratar esse status e exibir um alerta amigável, pois a API não permite a exclusão para manter a integridade do banco.
+
 ---
 
 ## Exemplos de erros comuns
@@ -267,6 +270,44 @@ Não precisa de body.
 
 - Use o Swagger para testar endpoints e visualizar exemplos de payload/resposta.
 - Sempre obtenha o token JWT no login e envie no header Authorization.
-- Trate erros de autenticação e permissão no frontend.
+- Trate erros de autenticação e permissão no frontend:
+  - **401 (Não autenticado):** O frontend automaticamente limpa a sessão e redireciona para `/login` quando detecta sessão expirada.
+  - **403 (Sem permissão):** Exiba um alerta informando que o usuário não tem permissão para executar a ação.
+  - **409 (Conflict):** Exiba um alerta amigável explicando por que a ação não é permitida (ex: recurso em uso).
+- **⚠️ FORMATO DE ERROS (ATUALIZADO):** Graças ao novo Error Handler global do backend, todos os erros devolvidos pela API enviarão a mensagem dentro da propriedade `"error"` e não mais `"message"`. (Exemplo: `err.response.data.error`). O frontend está configurado para lidar com esse padrão automaticamente.
 - Consulte o guia de padrões do projeto para entender fluxos e regras de negócio.
 - Em caso de dúvida, consulte os links importantes ou peça ajuda ao time.
+
+---
+
+## ⚠️ MELHORIAS PLANEJADAS — Capas e Sinopses de Livros
+
+### Situação atual
+- O frontend busca capas e sinopses do Google Books, mas **não estão persistidas no banco**
+- Cada carregamento faz novas requisições (consumo desnecessário)
+
+### O que falta
+
+#### Backend (Banco de Dados)
+1. **Adicionar campos ao modelo `Book`:**
+   - `coverUrl` (String, opcional) — URL da capa do livro
+   - `synopsis` (String, opcional) — Sinopse/descrição do livro
+
+2. **Nova migration Prisma:**
+   ```sql
+   ALTER TABLE Book ADD COLUMN coverUrl VARCHAR(500);
+   ALTER TABLE Book ADD COLUMN synopsis TEXT;
+   ```
+
+3. **Atualizar endpoints para retornar esses campos:**
+   - `GET /api/books` deve incluir `coverUrl` e `synopsis`
+   - `POST /api/books` deve aceitar esses campos
+   - `PUT /api/books/:id` deve permitir atualizar esses campos
+
+#### Frontend
+- ✅ Já está pronto! Só precisa que a API retorne os dados.
+
+### Benefícios
+- Reduz requisições ao Google Books (economia)
+- Capas e sinopses aparecem imediatamente para o usuário
+- Admin pode fazer upload manualmente se necessário

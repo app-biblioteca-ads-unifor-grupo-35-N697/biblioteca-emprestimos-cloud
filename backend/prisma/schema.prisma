@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -33,5 +34,5 @@ model Loan {
   isReturned Boolean   @default(false)
   isLate     Boolean   @default(false)
   user       User      @relation(fields: [userId], references: [id])
-  book       Book      @relation(fields: [bookId], references: [id])
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Restrict)
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
 import Home from './pages/Home';
 import Catalogo from './pages/Catalogo';
 import LivroDetalhe from './pages/LivroDetalhe';
@@ -9,6 +10,7 @@ import PainelAdmin from './pages/PainelAdmin';
 import CadastroLivro from './pages/CadastroLivro';
 import { apiRequest } from './services/api';
 import { clearStoredSession, getStoredToken, getStoredUser } from './utils/auth';
+import { queryClient } from './config/queryClient';
 import './App.css';
 
 // Componente de rota protegida (para alunos)
@@ -85,39 +87,41 @@ function AdminRoute({ children }) {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/catalogo" element={<Catalogo />} />
-        <Route path="/livro/:id" element={<LivroDetalhe />} />
-        <Route
-          path="/reservas"
-          element={
-            <ProtectedRoute>
-              <Reservas />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <PainelAdmin />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/cadastro-livro"
-          element={
-            <AdminRoute>
-              <CadastroLivro />
-            </AdminRoute>
-          }
-        />
-        <Route path="/login" element={<LoginCadastro />} />
-        <Route path="/cadastro" element={<LoginCadastro />} />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/catalogo" element={<Catalogo />} />
+          <Route path="/livro/:id" element={<LivroDetalhe />} />
+          <Route
+            path="/reservas"
+            element={
+              <ProtectedRoute>
+                <Reservas />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <PainelAdmin />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/cadastro-livro"
+            element={
+              <AdminRoute>
+                <CadastroLivro />
+              </AdminRoute>
+            }
+          />
+          <Route path="/login" element={<LoginCadastro />} />
+          <Route path="/cadastro" element={<LoginCadastro />} />
+        </Routes>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

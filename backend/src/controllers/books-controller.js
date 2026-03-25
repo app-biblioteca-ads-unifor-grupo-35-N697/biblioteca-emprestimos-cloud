@@ -1,83 +1,92 @@
 const booksModel = require("../models/books-model");
+const HttpError = require("../errors/HttpError");
+const prisma = require("../database/prisma");
 
 module.exports = {
   // GET /api/books  busca todos os livros
-  index: async (req, res) => {
-    const books = await booksModel.getAllBooks();
-    return res.json(books);
+  index: async (req, res, next) => {
+    try {
+      const books = await booksModel.getAllBooks();
+      return res.json(books);
+    } catch (error) {
+      next(error);
+    }
   },
   // GET /api/books/:id busca por id
-  show: async (req, res) => {
-    const { id } = req.params;
-    const book = await booksModel.getBookById(id);
-    if (!book) return res.status(404).json({ error: "Livro nao encontrado" });
-    return res.json(book);
+  show: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const book = await booksModel.getBookById(id);
+      if (!book) {
+        throw new HttpError(404, "Livro não encontrado");
+      }
+      return res.json(book);
+    } catch (error) {
+      next(error);
+    }
   },
 
   // GET /api/books/search?author=nome busca por autor
-  findByAuthor: async (req, res) => {
-    const { author } = req.query;
-
-    if (!author) {
-      return res.status(400).json({ error: "Parâmetro 'author' é obrigatório" });
+  findByAuthor: async (req, res, next) => {
+    try {
+      const { author } = req.query;
+      if (!author) {
+        throw new HttpError(400, "Parâmetro 'author' é obrigatório");
+      }
+      const books = await booksModel.getBooksByAuthor(author);
+      return res.json(books);
+    } catch (error) {
+      next(error);
     }
-
-    const books = await booksModel.getBooksByAuthor(author);
-
-    if (!books || books.length === 0) {
-      return res.status(404).json({ error: "Livros não encontrados para este autor" });
-    }
-
-    return res.json(books);
-  },
-
-  // POST /api/books/search/author
-  searchByRequestBody: async (req, res) => {
-    const { author } = req.body;
-
-    if (!author) {
-      return res.status(400).json({ error: "Campo 'author' é obrigatório no corpo da requisição" });
-    }
-
-    const books = await booksModel.getBooksByAuthor(author);
-
-    if (!books || books.length === 0) {
-      return res.status(404).json({ error: "Livros não encontrados para este autor" });
-    }
-
-    return res.json(books);
   },
 
   // POST /api/books criar um livro
-  save: async (req, res) => {
-    const { title, author, quantiteAvailable } = req.body;
-    if (
-      typeof title !== "string" ||
-      typeof author !== "string" ||
-      typeof quantiteAvailable !== "number"
-    ) {
-      return res.status(400).json({ message: "Dados invalidos!" });
+  save: async (req, res, next) => {
+    try {
+      const { title, author, quantiteAvailable } = req.body;
+      if (
+        typeof title !== "string" ||
+        typeof author !== "string" ||
+        typeof quantiteAvailable !== "number"
+      ) {
+        throw new HttpError(400, "Dados inválidos! Verifique os tipos de title, author e quantiteAvailable.");
+      }
+      const newBook = await booksModel.createBook(title, author, quantiteAvailable);
+      return res.status(201).json(newBook);
+    } catch (error) {
+      next(error);
     }
-    const newBook = await booksModel.createBook(title, author, quantiteAvailable);
-    return res.status(201).json(newBook);
   },
 
   // PUT /api/books/:id atualizar o livro
-  update: async (req, res) => {
-    const { id } = req.params;
-    const { title, author, quantiteAvailable } = req.body;
-    const fieldsToUpdate = {};
-    if (title) fieldsToUpdate.title = title;
-    if (author) fieldsToUpdate.author = author;
-    if (quantiteAvailable) fieldsToUpdate.quantiteAvailable = quantiteAvailable;
-    const updatedBook = await booksModel.updateBook(id, fieldsToUpdate);
-    return res.json(updatedBook);
+  update: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { title, author, quantiteAvailable } = req.body;
+      const fieldsToUpdate = {};
+      if (title) fieldsToUpdate.title = title;
+      if (author) fieldsToUpdate.author = author;
+      if (quantiteAvailable) fieldsToUpdate.quantiteAvailable = quantiteAvailable;
+      const updatedBook = await booksModel.updateBook(id, fieldsToUpdate);
+      return res.json(updatedBook);
+    } catch (error) {
+      next(error);
+    }
   },
 
   // DELETE /api/books/:id deletar o livro
-  delete: async (req, res) => {
-    const { id } = req.params;
-    const deletedBook = await booksModel.deleteBook(id);
-    return res.json(deletedBook);
+  delete: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      // VERIFICAÇÃO: Não permitir exclusão se houver empréstimos associados
+      const loanExists = await prisma.loan.findFirst({ where: { bookId: id } });
+      if (loanExists) {
+        throw new HttpError(409, "Não é possível remover o livro, pois ele possui empréstimos associados.");
+      }
+      const deletedBook = await booksModel.deleteBook(id);
+      return res.json(deletedBook);
+    } catch (error) {
+      next(error);
+    }
   }
 };

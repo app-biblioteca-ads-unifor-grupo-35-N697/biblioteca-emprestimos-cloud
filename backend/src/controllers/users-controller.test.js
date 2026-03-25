@@ -55,6 +55,8 @@ describe('RBAC/CRUD Usuários', () => {
   });
 
   it('não permite remover o último admin', async () => {
+    // Remove empréstimos primeiro para evitar erro de chave estrangeira
+    await prisma.loan.deleteMany();
     // Garante que só há 1 admin
     await prisma.user.deleteMany({ where: { role: 'admin', NOT: { email: 'admin-teste@biblioteca.com' } } });
     const res = await request(app)

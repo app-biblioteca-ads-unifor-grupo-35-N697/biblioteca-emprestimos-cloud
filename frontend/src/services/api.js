@@ -28,9 +28,23 @@ export async function apiRequest(path, options = {}) {
   if (!response.ok) {
     const isObjectData = typeof data === "object" && data !== null;
     const message = isObjectData
-      ? data.message || data.error || "Erro ao processar a requisicao"
+      ? data.error || data.message || "Erro ao processar a requisicao"
       : "Erro ao processar a requisicao";
-    throw new Error(message);
+    
+    // Logout automático em caso de sessão expirada (401)
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("usuario");
+      // Redirecionar apenas se não estiver já em página de autenticação
+      if (!window.location.pathname.includes('login') && !window.location.pathname.includes('cadastro')) {
+        window.location.href = '/login';
+      }
+    }
+    
+    const error = new Error(message);
+    error.status = response.status;
+    error.response = { status: response.status, data };
+    throw error;
   }
 
   return data;

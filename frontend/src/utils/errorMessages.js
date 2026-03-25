@@ -20,5 +20,9 @@ export function getFriendlyError(error, fallbackMessage = 'Nao foi possivel conc
     return 'Dados invalidos. Revise as informacoes e tente novamente.';
   }
 
+  if (message.includes('negado') || message.includes('forbidden') || message.includes('403')) {
+    return 'Você não tem permissão para executar essa ação.';
+  }
+
   return rawMessage;
 }

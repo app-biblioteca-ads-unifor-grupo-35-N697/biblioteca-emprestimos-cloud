@@ -1476,3 +1476,235 @@ body {
   }
 }
 
+/* ========== ESTILOS PARA ABAS E GERENCIAMENTO DE USUÁRIOS ========== */
+
+/* Abas do Painel Admin */
+.painel-admin-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.painel-tab {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  margin-bottom: -14px;
+}
+
+.painel-tab:hover {
+  color: #374151;
+}
+
+.painel-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+/* Tabela de Usuários */
+.painel-usuarios-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.painel-usuarios-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.painel-usuarios-table thead {
+  background: #f3f4f6;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.painel-usuarios-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  font-size: 13px;
+}
+
+.painel-usuarios-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 13px;
+}
+
+.painel-usuarios-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.painel-usuarios-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Badges na tabela */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge.admin {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.badge.aluno {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge.available {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge.unavailable {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+/* Status na tabela */
+.status-ok {
+  color: #059669;
+  font-weight: 500;
+}
+
+.status-warning {
+  color: #d97706;
+  font-weight: 500;
+}
+
+/* Ações de usuários */
+.usuario-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.usuario-actions button {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #374151;
+}
+
+.usuario-actions .btn-details {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.usuario-actions .btn-details:hover:not(:disabled) {
+  background: #3b82f6;
+  color: white;
+}
+
+.usuario-actions .btn-delete {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.usuario-actions .btn-delete:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+}
+
+.usuario-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsividade das abas */
+@media (max-width: 768px) {
+  .painel-admin-tabs {
+    flex-wrap: wrap;
+  }
+
+  .painel-usuarios-table {
+    overflow-x: auto;
+  }
+
+  .painel-usuarios-table table {
+    min-width: 600px;
+  }
+
+  .usuario-actions {
+    flex-direction: column;
+  }
+
+  .usuario-actions button {
+    width: 100%;
+  }
+}
+
+/* ==================== PAGINAÇÃO E INFOS ==================== */
+.catalogo-info {
+  text-align: center;
+  color: #9ca3af;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.catalogo-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 2rem 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-paginacao {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.btn-paginacao:hover:not(:disabled) {
+  background: #2563eb;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-paginacao:disabled {
+  background: #6b7280;
+  color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.paginacao-info {
+  color: #d1d5db;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: center;
+}
+
