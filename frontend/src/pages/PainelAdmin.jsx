@@ -54,16 +54,8 @@ function PainelAdmin() {
           urlCapa: '',
         }));
 
-        // Enriquecer livros com dados do Google Books (incluindo capa)
-        const livrosEnriquecidos = await Promise.all(
-          livrosMapeados.map(async (livro) => {
-            try {
-              return await enrichBookWithGoogleData(livro);
-            } catch (error) {
-              return livro;
-            }
-          })
-        );
+        // Dados do Google Books não são carregados na listagem ampla para evitar limite de requisições
+        const livrosEnriquecidos = livrosMapeados;
 
         const idsComEmprestimos = Array.isArray(emprestimos)
           ? [...new Set(emprestimos.map((emprestimo) => emprestimo.bookId).filter(Boolean))]

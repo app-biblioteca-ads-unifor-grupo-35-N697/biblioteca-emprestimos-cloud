@@ -130,7 +130,7 @@ function Catalogo() {
           {/* Grid de Livros */}
           {isLoading ? (
             <div className="catalogo-empty fade-in">
-              <p>⏳ Carregando livros com cache inteligente...</p>
+              <p>⏳ Carregando acervo...</p>
             </div>
           ) : error ? (
             <div className="catalogo-empty fade-in">
@@ -141,6 +141,11 @@ function Catalogo() {
               <div className="catalogo-grid fade-in">
                 {livrosFiltrados.map((livro) => (
                   <div key={livro.id} className="catalogo-card">
+                    <div className="catalogo-capa">
+                      <span className="catalogo-capa-fallback" aria-hidden="true">
+                        📖
+                      </span>
+                    </div>
                     <h3>{livro.titulo}</h3>
                     <p className="catalogo-autor">{livro.autor}</p>
                     

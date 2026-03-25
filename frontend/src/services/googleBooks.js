@@ -328,24 +328,15 @@ export async function fetchBookMetadataByTitleAuthor(titulo, autor = '') {
     .replace(/\s+/g, ' ')
     .trim();
 
-  const queryCandidates = [];
-
-  if (firstAuthor) {
-    queryCandidates.push(`intitle:${titulo.trim()} inauthor:${firstAuthor}`);
-  }
-  queryCandidates.push(`intitle:${titulo.trim()}`);
-  queryCandidates.push(titulo.trim());
+  // Faz apenas UMA requisição combinada para evitar múltiplos 429
+  // Se tiver autor procura por ambos, senão procura só pelo título
+  const singleQuery = firstAuthor 
+    ? `intitle:${titulo.trim()} inauthor:${firstAuthor}`
+    : `intitle:${titulo.trim()}`;
 
   const requestPromise = (async () => {
     try {
-      let metadata = null;
-
-      for (const query of queryCandidates) {
-        metadata = await fetchGoogleMetadataByQuery(query);
-        if (metadata?.urlCapa || metadata?.sinopse || metadata?.titulo) {
-          break;
-        }
-      }
+      const metadata = await fetchGoogleMetadataByQuery(singleQuery);
 
       if (metadata) {
         setCachedMetadata(cacheKey, metadata);
