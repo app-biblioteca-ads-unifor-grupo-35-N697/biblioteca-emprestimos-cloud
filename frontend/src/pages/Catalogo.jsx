@@ -141,25 +141,8 @@ function Catalogo() {
               <div className="catalogo-grid fade-in">
                 {livrosFiltrados.map((livro) => (
                   <div key={livro.id} className="catalogo-card">
-                    <div className="catalogo-capa">
-                      <span className="catalogo-capa-fallback" aria-hidden="true">
-                        📖
-                      </span>
-                      {livro.urlCapa && (
-                        <img
-                          src={livro.urlCapa}
-                          alt={`Capa do livro ${livro.titulo}`}
-                          className="catalogo-capa-img"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                    </div>
                     <h3>{livro.titulo}</h3>
                     <p className="catalogo-autor">{livro.autor}</p>
-                    <p className="catalogo-genero">{livro.genero}</p>
                     
                     <div className="catalogo-disponibilidade">
                       {livro.disponiveis > 0 ? (
