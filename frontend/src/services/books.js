@@ -1,6 +1,9 @@
 import { apiRequest } from './api';
 import { fetchBookMetadataByTitleAuthor } from './googleBooks';
 
+/**
+ * Mapeia livro da API para formato consistente
+ */
 export function mapBookFromApi(book) {
   return {
     id: book.id,
@@ -13,6 +16,10 @@ export function mapBookFromApi(book) {
   };
 }
 
+/**
+ * Enriquece um livro com dados do Google Books
+ * Com tratamento de erro para não quebrar o fluxo
+ */
 export async function enrichBookWithGoogleData(book) {
   try {
     const metadata = await fetchBookMetadataByTitleAuthor(book.titulo, book.autor);
@@ -26,18 +33,27 @@ export async function enrichBookWithGoogleData(book) {
       genero: metadata.categorias || book.genero,
     };
   } catch {
+    // Retorna livro sem enriquecimento em caso de erro
     return book;
   }
 }
 
-async function enrichBooksSequentially(books) {
-  const enriched = [];
-
-  for (const book of books) {
-    enriched.push(await enrichBookWithGoogleData(book));
+/**
+ * Enriquece múltiplos livros em paralelo com limite de concorrência
+ * Evita sobrecarregar a API do Google Books
+ */
+export async function enrichBooksInParallel(books, limit = 5) {
+  const results = [];
+  
+  for (let i = 0; i < books.length; i += limit) {
+    const batch = books.slice(i, i + limit);
+    const enrichedBatch = await Promise.all(
+      batch.map(book => enrichBookWithGoogleData(book))
+    );
+    results.push(...enrichedBatch);
   }
-
-  return enriched;
+  
+  return results;
 }
 
 export async function fetchBooksWithDetails() {
@@ -59,11 +75,19 @@ export async function fetchBookDetails(id) {
   return mapBookFromApi(book);
 }
 
+/**
+ * Busca livros com detalhes enriquecidos do Google Books
+ * OTIMIZADO: Enriquecimento em paralelo (limite de 5 requisições simultâneas)
+ */
 export async function fetchBooksWithGoogleDetails() {
   const books = await fetchBooksWithDetails();
-  return enrichBooksSequentially(books);
+  // Enriquece em paralelo em lotes de 5 para melhor performance
+  return enrichBooksInParallel(books, 5);
 }
 
+/**
+ * Busca detalhes de um livro com enriquecimento do Google
+ */
 export async function fetchBookDetailsWithGoogle(id) {
   const book = await fetchBookDetails(id);
   return enrichBookWithGoogleData(book);

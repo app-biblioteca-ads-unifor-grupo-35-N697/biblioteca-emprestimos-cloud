@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { apiRequest } from '../services/api';
-import { fetchBooksWithGoogleDetails } from '../services/books';
+import { useBooksWithGoogle, useUserLoans } from '../services/hooks';
 import { getFriendlyError } from '../utils/errorMessages';
 
 const STAT_INICIAL = [
@@ -13,65 +12,63 @@ const STAT_INICIAL = [
 ];
 
 function Home() {
-  const [featuredBooks, setFeaturedBooks] = useState([]);
-  const [stats, setStats] = useState(STAT_INICIAL);
-  const [isLoading, setIsLoading] = useState(true);
-  const [erroMsg, setErroMsg] = useState('');
+  // Buscar livros com React Query (cache automático)
+  const { data: books = [], isLoading: isLoadingBooks, error: errorBooks } = useBooksWithGoogle();
+  
+  // Buscar empréstimos com React Query (cache automático)
+  const { data: loans = [], isLoading: isLoadingLoans, error: errorLoans } = useUserLoans();
 
-  useEffect(() => {
-    async function carregarDashboard() {
-      try {
-        const [books, loans] = await Promise.all([
-          fetchBooksWithGoogleDetails(),
-          apiRequest('/api/loans'),
-        ]);
+  // Calcular livros em destaque
+  const featuredBooks = useMemo(() => {
+    const ordenados = [...books].sort((a, b) => {
+      if (b.disponiveis !== a.disponiveis) return b.disponiveis - a.disponiveis;
+      return a.titulo.localeCompare(b.titulo);
+    });
+    return ordenados.slice(0, 3);
+  }, [books]);
 
-        // Livros em destaque: os 3 com mais exemplares disponíveis
-        const ordenados = [...books].sort((a, b) => {
-          if (b.disponiveis !== a.disponiveis) return b.disponiveis - a.disponiveis;
-          return a.titulo.localeCompare(b.titulo);
-        });
-        setFeaturedBooks(ordenados.slice(0, 3));
-
-        setStats([
-          {
-            id: 'titulos',
-            icon: '📚',
-            color: '#3b82f6',
-            value: books.length,
-            label: 'Títulos no Acervo',
-          },
-          {
-            id: 'disponiveis',
-            icon: '✅',
-            color: '#10b981',
-            value: books.reduce((soma, b) => soma + b.disponiveis, 0),
-            label: 'Exemplares Disponíveis',
-          },
-          {
-            id: 'ativos',
-            icon: '🔖',
-            color: '#f59e0b',
-            value: loans.filter((l) => !l.isReturned).length,
-            label: 'Empréstimos Ativos',
-          },
-          {
-            id: 'registrados',
-            icon: '📈',
-            color: '#06b6d4',
-            value: loans.length,
-            label: 'Empréstimos Registrados',
-          },
-        ]);
-      } catch (error) {
-        setErroMsg(getFriendlyError(error, 'Não foi possível carregar os dados do acervo.'));
-      } finally {
-        setIsLoading(false);
-      }
+  // Calcular stats
+  const stats = useMemo(() => {
+    if (isLoadingBooks || isLoadingLoans) {
+      return STAT_INICIAL;
     }
 
-    carregarDashboard();
-  }, []);
+    return [
+      {
+        id: 'titulos',
+        icon: '📚',
+        color: '#3b82f6',
+        value: books.length,
+        label: 'Títulos no Acervo',
+      },
+      {
+        id: 'disponiveis',
+        icon: '✅',
+        color: '#10b981',
+        value: books.reduce((soma, b) => soma + b.disponiveis, 0),
+        label: 'Exemplares Disponíveis',
+      },
+      {
+        id: 'ativos',
+        icon: '🔖',
+        color: '#f59e0b',
+        value: loans.filter((l) => !l.isReturned).length,
+        label: 'Empréstimos Ativos',
+      },
+      {
+        id: 'registrados',
+        icon: '📈',
+        color: '#06b6d4',
+        value: loans.length,
+        label: 'Empréstimos Registrados',
+      },
+    ];
+  }, [books, loans, isLoadingBooks, isLoadingLoans]);
+
+  const isLoading = isLoadingBooks || isLoadingLoans;
+  const erroMsg = errorBooks ? getFriendlyError(errorBooks, 'Erro ao carregar livros') 
+                 : errorLoans ? getFriendlyError(errorLoans, 'Erro ao carregar empréstimos')
+                 : '';
 
   return (
     <div className="home-page">
@@ -96,19 +93,19 @@ function Home() {
         {stats.map((stat) => (
           <div key={stat.id} className="stat-card" style={{ borderLeftColor: stat.color }}>
             <div className="stat-icon">{stat.icon}</div>
-            <div className="stat-number">{isLoading ? '...' : stat.value}</div>
+            <div className="stat-number">{isLoading ? '⏳' : stat.value}</div>
             <div className="stat-label">{stat.label}</div>
           </div>
         ))}
       </section>
 
-      {erroMsg && <p className="home-status-message">{erroMsg}</p>}
+      {erroMsg && <p className="home-status-message">⚠️ {erroMsg}</p>}
 
       <section className="home-featured fade-in">
         <h2>Livros em Destaque</h2>
 
         {isLoading ? (
-          <p className="home-status-message">Carregando acervo...</p>
+          <p className="home-status-message">⏳ Carregando acervo com cache inteligente...</p>
         ) : featuredBooks.length > 0 ? (
           <div className="featured-books-grid">
             {featuredBooks.map((book) => (

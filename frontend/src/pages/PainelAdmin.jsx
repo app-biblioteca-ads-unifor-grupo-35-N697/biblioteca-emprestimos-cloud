@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { apiRequest } from '../services/api';
 import { getFriendlyError } from '../utils/errorMessages';
-import { enrichBookWithGoogleData, mapBookFromApi } from '../services/books';
+import { enrichBookWithGoogleData } from '../services/books';
 
 function PainelAdmin() {
   // Abas
