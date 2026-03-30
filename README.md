@@ -8,10 +8,11 @@
 
 ## 🌐 Links do Projeto
 
-- Back-end: https://biblioteca-emprestimos-cloud.onrender.com
+- Back-end: https://biblioteca-emprestimos-cloud.onrender.com (só abre no dashboard do Render)
 - Front-end: https://www.bibliotecauni.space
-- Demonstração em Vídeo (YouTube):https://youtu.be/q1CK-HNEQSo
 - Vídeo Original (Google Drive): https://drive.google.com/file/d/1IMohwgCkHVkWft9D6fJVrIcplNvi9BlW/view?usp=drive_link
+- Link para swagger: https://biblioteca-emprestimos-cloud.onrender.com/docs
+- Demonstração em Vídeo (YouTube): https://www.youtube.com/watch?v=g1CK-HNEQSo
   
 
 ## ✅ Descrição

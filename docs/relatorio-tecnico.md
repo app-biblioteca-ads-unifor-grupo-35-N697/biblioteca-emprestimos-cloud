@@ -5,9 +5,14 @@ Data: Março de 2026
 
 🔗 Links do Projeto
 Aplicação em Produção: https://www.bibliotecauni.space
-API (Back-end no Render): https://biblioteca-emprestimos-cloud.onrender.com
-Demonstração em Vídeo (YouTube): https://youtu.be/q1CK-HNEQSo
+API (Back-end no Render): https://biblioteca-emprestimos-cloud.onrender.com (aberto só no dashboard do Render)
+Link para swagger: https://biblioteca-emprestimos-cloud.onrender.com/docs
+Demonstração em Vídeo (YouTube): https://www.youtube.com/watch?v=g1CK-HNEQSo
 Vídeo Original (Google Drive):** https://drive.google.com/file/d/1IMohwgCkHVkWft9D6fJVrIcplNvi9BlW/view?usp=drive_link
+link para o repositório no GitHub: https://github.com/app-biblioteca-ads-unifor-grupo-35-N697/biblioteca-emprestimos-cloud
+link kanban: https://github.com/orgs/app-biblioteca-ads-unifor-grupo-35-N697/projects/1
+
+
 
 
 1. Visão Geral do Sistema
