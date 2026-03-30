@@ -3,6 +3,13 @@ Curso: Desenvolvimento de Software em Nuvem (ADS/IA - Unifor)
 Grupo: 35 N697
 Data: Março de 2026
 
+🔗 Links do Projeto
+Aplicação em Produção: https://www.bibliotecauni.space
+API (Back-end no Render): https://biblioteca-emprestimos-cloud.onrender.com
+Demonstração em Vídeo (YouTube): https://youtu.be/q1CK-HNEQSo
+Vídeo Original (Google Drive):** https://drive.google.com/file/d/1IMohwgCkHVkWft9D6fJVrIcplNvi9BlW/view?usp=drive_link
+
+
 1. Visão Geral do Sistema
 O Sistema de Empréstimos de Livros em Nuvem é uma aplicação web desenvolvida para facilitar o gerenciamento de empréstimos de livros em bibliotecas virtuais. O sistema permite que usuários registrem-se, naveguem por um catálogo de livros, solicitem empréstimos e acompanhem o status de suas reservas. A arquitetura é baseada em uma abordagem cliente-servidor, com separação clara entre front-end, back-end e banco de dados, garantindo escalabilidade e segurança.
 
